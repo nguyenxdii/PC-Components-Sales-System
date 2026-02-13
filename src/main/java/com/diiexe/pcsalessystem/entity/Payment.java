@@ -1,5 +1,6 @@
 package com.diiexe.pcsalessystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -18,6 +19,8 @@ public class Payment extends BaseEntity {
     
     private LocalDateTime paidAt;
 
+    // CON ĐÓNG: Tránh lặp vô tận khi serialize Order
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "order_id")
     private Order order;

@@ -2,6 +2,8 @@ package com.diiexe.pcsalessystem.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -23,9 +25,10 @@ public class Product extends BaseEntity {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @Lob
-    @Column(columnDefinition = "VARBINARY(MAX)")
-    private byte[] image;
+    // Bidirectional: 1 Product có nhiều ảnh
+    // CHA MỞ: Để lấy được list ảnh phụ cho gallery
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductImage> images = new ArrayList<>();
 
     // Thông số kỹ thuật (Build PC)
     private String socketType; // LGA1700

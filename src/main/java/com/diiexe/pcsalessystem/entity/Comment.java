@@ -1,5 +1,6 @@
 package com.diiexe.pcsalessystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,14 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToOne
-    @JoinColumn(name = "reply_to_id")
-    private Comment replyTo; // Admin trả lời
+    // Self-reference: 1 Comment có thể là reply của 1 comment khác
+    // CON ĐÓNG: Chặn lặp vô tận ở comment cha
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parentComment; // Comment cha (null nếu là comment gốc)
+    
+    // Bidirectional: 1 Comment có thể có nhiều replies
+    @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
+    private java.util.List<Comment> replies = new java.util.ArrayList<>();
 }

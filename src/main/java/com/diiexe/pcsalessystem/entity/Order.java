@@ -1,6 +1,5 @@
 package com.diiexe.pcsalessystem.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -25,14 +24,19 @@ public class Order extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+    
+    // Relationship: Order có thể sử dụng 1 voucher
+    @ManyToOne
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
 
     // Bidirectional: 1 Đơn hàng có nhiều chi tiết sản phẩm
+    // CHA MỞ: Để Frontend thấy được danh sách món hàng
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
     // Bidirectional: 1 Đơn hàng có 1 thông tin thanh toán
+    // CHA MỞ: Để Frontend biết đã thanh toán chưa
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
     private Payment payment;
 }
