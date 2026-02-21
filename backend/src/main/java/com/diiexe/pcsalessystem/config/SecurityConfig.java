@@ -2,6 +2,7 @@ package com.diiexe.pcsalessystem.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,10 +17,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for stateless APIs
+            .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/public/**").permitAll() // Allow auth endpoints
-                .anyRequest().authenticated() // Protect other endpoints
+                .requestMatchers("/api/auth/**", "/public/**").permitAll()
+
+                // GET công khai — khách hàng xem danh mục, thương hiệu
+                .requestMatchers("/api/categories/**").permitAll()
+                .requestMatchers("/api/brands/**").permitAll()
+
+                // POST/PUT/DELETE yêu cầu đăng nhập (admin)
+                .anyRequest().authenticated()
             );
         return http.build();
     }
