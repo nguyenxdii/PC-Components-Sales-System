@@ -38,7 +38,7 @@ public class CategoryService {
                 : SlugUtils.toSlug(request.getName());
 
         if (categoryRepository.existsBySlug(slug)) {
-            throw new RuntimeException("Slug '" + slug + "' đã tồn tại");
+            throw new RuntimeException("Danh mục này đã tồn tại");
         }
 
         Category category = new Category();
@@ -61,7 +61,7 @@ public class CategoryService {
         if (request.getSlug() != null && !request.getSlug().isBlank()) {
             String newSlug = request.getSlug();
             if (!newSlug.equals(category.getSlug()) && categoryRepository.existsBySlug(newSlug)) {
-                throw new RuntimeException("Slug '" + newSlug + "' đã tồn tại");
+                throw new RuntimeException("Danh mục này đã tồn tại");
             }
             category.setSlug(newSlug);
         }
