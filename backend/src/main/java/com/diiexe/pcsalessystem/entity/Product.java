@@ -11,14 +11,27 @@ import java.util.List;
 @Data
 public class Product extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String name;
 
     @Column(unique = true)
     private String sku;
 
-    private Double price;
-    private Double costPrice; // Ẩn với khách, dùng cho admin tính lãi
+    /**
+     * Slug dùng cho URL SEO: /products/cpu-intel-core-i9-13900k
+     */
+    @Column(unique = true)
+    private String slug;
+
+    private Double price;        // Giá gốc (thường hiển thị gạch ngang)
+    private Double salePrice;    // Giá khuyến mãi thường ngày (null = không giảm giá)
+    private Double costPrice;    // Ẩn với khách, dùng cho admin tính lãi
+
+    /**
+     * Ẩn/hiện sản phẩm mà không cần xóa khỏi DB.
+     * false = ẩn khỏi trang khách hàng, true = hiển thị (mặc định).
+     */
+    private Boolean isActive = true;
 
     private Integer stock;
 

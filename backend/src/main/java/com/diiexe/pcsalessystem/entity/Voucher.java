@@ -20,5 +20,18 @@ public class Voucher extends BaseEntity {
     private Double minOrderValue;    // Đơn tối thiểu
 
     private Integer quantity;
+
+    /**
+     * Ngày bắt đầu hiệu lực của voucher.
+     * null = có hiệu lực ngay khi tạo.
+     */
+    private LocalDateTime startDate;
+
     private LocalDateTime expirationDate;
+
+    /**
+     * Bật/tắt voucher thủ công (dù chưa hết hạn).
+     * Admin có thể tắt khẩn trong trường hợp cần thiết.
+     */
+    private Boolean isActive = true;
 }
