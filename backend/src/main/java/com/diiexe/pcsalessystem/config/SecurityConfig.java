@@ -22,8 +22,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**", "/public/**").permitAll()
 
                 // GET công khai — khách hàng xem danh mục, thương hiệu
-                .requestMatchers("/api/categories/**").permitAll()
-                .requestMatchers("/api/brands/**").permitAll()
+                .requestMatchers("/api/categories", "/api/categories/**").permitAll()
+                .requestMatchers("/api/brands", "/api/brands/**").permitAll()
 
                 // POST/PUT/DELETE yêu cầu đăng nhập (admin)
                 .anyRequest().authenticated()

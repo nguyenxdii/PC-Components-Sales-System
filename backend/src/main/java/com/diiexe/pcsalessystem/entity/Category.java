@@ -1,5 +1,6 @@
 package com.diiexe.pcsalessystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class Category extends BaseEntity {
     @Column(unique = true)
     private String slug;
 
+    @JsonIgnore
     @Lob
     @Column(columnDefinition = "VARBINARY(MAX)")
     private byte[] icon;

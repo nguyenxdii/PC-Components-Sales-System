@@ -6,8 +6,10 @@ import com.diiexe.pcsalessystem.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -39,27 +41,42 @@ public class CategoryController {
     }
 
     // POST /api/categories
-    @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody CategoryRequest request) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> create(
+            @RequestParam("name") String name,
+            @RequestParam(value = "slug", required = false) String slug,
+            @RequestParam(value = "isActive", defaultValue = "true") Boolean isActive,
+            @RequestParam("file") MultipartFile file) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
+            if (file == null || file.isEmpty()) {
+                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Vui lòng tải icon danh mục đính kèm"));
+            }
+            if (name == null || name.trim().isEmpty()) {
+                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Tên danh mục không được để trống"));
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(name, slug, isActive, file));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
         }
     }
 
     // PUT /api/categories/{id}
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(@PathVariable Long id,
-                                    @Valid @RequestBody CategoryRequest request) {
+                                    @RequestParam("name") String name,
+                                    @RequestParam(value = "slug", required = false) String slug,
+                                    @RequestParam(value = "isActive", required = false) Boolean isActive,
+                                    @RequestParam(value = "file", required = false) MultipartFile file) {
         try {
-            return ResponseEntity.ok(categoryService.update(id, request));
+            if (name == null || name.trim().isEmpty()) {
+                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Tên danh mục không được để trống"));
+            }
+            return ResponseEntity.ok(categoryService.update(id, name, slug, isActive, file));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
     }
 
-    // DELETE /api/categories/{id}             → ẩn (soft delete)
     // DELETE /api/categories/{id}?hard=true   → xóa hẳn
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id,
@@ -72,7 +89,26 @@ public class CategoryController {
             categoryService.softDelete(id);
             return ResponseEntity.ok(Map.of("message", "Đã ẩn danh mục"));
         } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("sản phẩm")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+            }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // GET /api/categories/{id}/icon
+    @GetMapping("/{id}/icon")
+    public ResponseEntity<byte[]> getCategoryIcon(@PathVariable Long id) {
+        try {
+            Category category = categoryService.getById(id);
+            if (category.getIcon() == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(category.getIcon());
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }
