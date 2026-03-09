@@ -20,10 +20,8 @@ public class Category extends BaseEntity {
     @Column(unique = true)
     private String slug;
 
-    @JsonIgnore
-    @Lob
-    @Column(columnDefinition = "VARBINARY(MAX)")
-    private byte[] icon;
+    @Column(length = 1000)
+    private String iconUrl;
 
     /**
      * Ẩn/hiện danh mục mà không cần xóa khỏi DB.

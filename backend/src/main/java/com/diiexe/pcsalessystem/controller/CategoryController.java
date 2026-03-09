@@ -95,20 +95,4 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));
         }
     }
-
-    // GET /api/categories/{id}/icon
-    @GetMapping("/{id}/icon")
-    public ResponseEntity<byte[]> getCategoryIcon(@PathVariable Long id) {
-        try {
-            Category category = categoryService.getById(id);
-            if (category.getIcon() == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .body(category.getIcon());
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }

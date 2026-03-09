@@ -7,6 +7,9 @@ import com.diiexe.pcsalessystem.util.SlugUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -14,6 +17,9 @@ public class BrandService {
 
     @Autowired
     private BrandRepository brandRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     public List<Brand> getAllActive() {
         return brandRepository.findByIsActiveTrueOrderByNameAsc();
@@ -28,7 +34,7 @@ public class BrandService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu với id: " + id));
     }
 
-    public Brand create(BrandRequest request) {
+    public Brand create(BrandRequest request, MultipartFile file) {
         if (brandRepository.existsByName(request.getName())) {
             throw new RuntimeException("Tên thương hiệu đã tồn tại");
         }
@@ -46,10 +52,19 @@ public class BrandService {
         brand.setSlug(slug);
         brand.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
 
+        if (file != null && !file.isEmpty()) {
+            try {
+                String logoUrl = cloudinaryService.uploadImage(file, "pc-media/system/brands");
+                brand.setLogoUrl(logoUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Lỗi khi tải ảnh lên Cloudinary", e);
+            }
+        }
+
         return brandRepository.save(brand);
     }
 
-    public Brand update(Long id, BrandRequest request) {
+    public Brand update(Long id, BrandRequest request, MultipartFile file) {
         Brand brand = getById(id);
 
         if (!brand.getName().equals(request.getName())
@@ -68,6 +83,15 @@ public class BrandService {
 
         if (request.getIsActive() != null) {
             brand.setIsActive(request.getIsActive());
+        }
+
+        if (file != null && !file.isEmpty()) {
+            try {
+                String logoUrl = cloudinaryService.uploadImage(file, "pc-media/system/brands");
+                brand.setLogoUrl(logoUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Lỗi khi tải ảnh mới lên Cloudinary", e);
+            }
         }
 
         return brandRepository.save(brand);

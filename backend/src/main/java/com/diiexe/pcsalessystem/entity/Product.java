@@ -38,6 +38,9 @@ public class Product extends BaseEntity {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
+    @Column(length = 1000)
+    private String imageUrl; // Main thumbnail for Product
+
     // Bidirectional: 1 Product có nhiều ảnh
     // CHA MỞ: Để lấy được list ảnh phụ cho gallery
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

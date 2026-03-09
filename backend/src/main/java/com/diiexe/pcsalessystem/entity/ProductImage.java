@@ -10,9 +10,8 @@ import lombok.*;
 @Data
 public class ProductImage extends BaseEntity {
     
-    @Lob
-    @Column(columnDefinition = "VARBINARY(MAX)")
-    private byte[] image;
+    @Column(length = 1000)
+    private String imageUrl;
     
     private String altText; // Text mô tả ảnh cho SEO
     

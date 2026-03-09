@@ -28,9 +28,8 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "NVARCHAR(500)")
     private String address;
 
-    @Lob
-    @Column(columnDefinition = "VARBINARY(MAX)")
-    private byte[] avatar;
+    @Column(length = 1000)
+    private String avatarUrl;
 
     private boolean locked = false;
     private String role; // "ADMIN", "USER", "STAFF"

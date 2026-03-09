@@ -18,9 +18,8 @@ public class Brand extends BaseEntity {
     @Column(unique = true)
     private String slug;
 
-    @Lob
-    @Column(columnDefinition = "VARBINARY(MAX)")
-    private byte[] logo;
+    @Column(length = 1000)
+    private String logoUrl;
 
     /**
      * Ẩn/hiện thương hiệu mà không cần xóa khỏi DB.

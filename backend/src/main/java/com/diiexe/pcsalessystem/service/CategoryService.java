@@ -21,6 +21,9 @@ public class CategoryService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
     public List<Category> getAllActive() {
         return categoryRepository.findByIsActiveTrueOrderByDisplayOrderAsc();
     }
@@ -54,7 +57,8 @@ public class CategoryService {
 
         if (file != null && !file.isEmpty()) {
             try {
-                category.setIcon(file.getBytes());
+                String iconUrl = cloudinaryService.uploadImage(file, "pc-media/system/categories");
+                category.setIconUrl(iconUrl);
             } catch (IOException e) {
                 throw new RuntimeException("Lỗi khi xử lý file ảnh", e);
             }
@@ -86,7 +90,8 @@ public class CategoryService {
 
         if (file != null && !file.isEmpty()) {
             try {
-                category.setIcon(file.getBytes());
+                String iconUrl = cloudinaryService.uploadImage(file, "pc-media/system/categories");
+                category.setIconUrl(iconUrl);
             } catch (IOException e) {
                 throw new RuntimeException("Lỗi khi xử lý file ảnh", e);
             }
