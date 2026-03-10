@@ -12,4 +12,6 @@ public class CategoryRequest {
     private String slug;
 
     private Boolean isActive;
+    
+    private Long parentId;
 }

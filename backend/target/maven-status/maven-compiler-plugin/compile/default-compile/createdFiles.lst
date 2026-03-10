@@ -1,9 +1,6 @@
 com\diiexe\pcsalessystem\controller\BrandController.class
-com\diiexe\pcsalessystem\service\CategoryService.class
 com\diiexe\pcsalessystem\entity\User.class
 com\diiexe\pcsalessystem\entity\CartItem.class
-com\diiexe\pcsalessystem\entity\SectionProduct.class
-com\diiexe\pcsalessystem\util\SlugUtils.class
 com\diiexe\pcsalessystem\service\BannerService.class
 com\diiexe\pcsalessystem\service\AuthService.class
 com\diiexe\pcsalessystem\entity\Product.class
@@ -15,10 +12,8 @@ com\diiexe\pcsalessystem\dto\BrandRequest.class
 com\diiexe\pcsalessystem\entity\Cart.class
 com\diiexe\pcsalessystem\entity\ProductImage.class
 com\diiexe\pcsalessystem\dto\LoginResponse.class
-com\diiexe\pcsalessystem\entity\Section.class
 com\diiexe\pcsalessystem\service\BrandService.class
 com\diiexe\pcsalessystem\entity\Voucher.class
-com\diiexe\pcsalessystem\entity\Warranty.class
 com\diiexe\pcsalessystem\dto\RegisterRequest.class
 com\diiexe\pcsalessystem\repository\UserRepository.class
 com\diiexe\pcsalessystem\entity\BaseEntity.class
@@ -26,12 +21,9 @@ com\diiexe\pcsalessystem\entity\Brand.class
 com\diiexe\pcsalessystem\controller\BannerController.class
 com\diiexe\pcsalessystem\dto\BannerRequest.class
 com\diiexe\pcsalessystem\repository\BannerRepository.class
-com\diiexe\pcsalessystem\repository\CategoryRepository.class
 com\diiexe\pcsalessystem\service\CloudinaryService.class
-com\diiexe\pcsalessystem\dto\CategoryRequest.class
 com\diiexe\pcsalessystem\entity\OrderDetail.class
 com\diiexe\pcsalessystem\config\SecurityConfig.class
-com\diiexe\pcsalessystem\repository\ProductRepository.class
 com\diiexe\pcsalessystem\dto\UserDTO.class
 com\diiexe\pcsalessystem\dto\LoginRequest.class
 com\diiexe\pcsalessystem\entity\Comment.class

@@ -37,7 +37,7 @@ public class CategoryService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với id: " + id));
     }
 
-    public Category create(String name, String slug, Boolean isActive, MultipartFile file) {
+    public Category create(String name, String slug, Boolean isActive, Long parentId, MultipartFile file) {
         if (categoryRepository.existsByName(name)) {
             throw new RuntimeException("Tên danh mục đã tồn tại");
         }
@@ -55,6 +55,12 @@ public class CategoryService {
         category.setSlug(generatedSlug);
         category.setIsActive(isActive != null ? isActive : true);
 
+        if (parentId != null) {
+            Category parent = categoryRepository.findById(parentId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục cha với id: " + parentId));
+            category.setParent(parent);
+        }
+
         if (file != null && !file.isEmpty()) {
             try {
                 String iconUrl = cloudinaryService.uploadImage(file, "pc-media/system/categories");
@@ -67,7 +73,7 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public Category update(Long id, String name, String slug, Boolean isActive, MultipartFile file) {
+    public Category update(Long id, String name, String slug, Boolean isActive, Long parentId, MultipartFile file) {
         Category category = getById(id);
 
         if (!category.getName().equals(name)
@@ -82,6 +88,29 @@ public class CategoryService {
                 throw new RuntimeException("Danh mục này đã tồn tại");
             }
             category.setSlug(newSlug);
+        }
+
+        if (parentId != null) {
+            if (parentId.equals(category.getId())) {
+                throw new RuntimeException("Danh mục không thể làm cha của chính nó");
+            }
+            Category parent = categoryRepository.findById(parentId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục cha với id: " + parentId));
+            
+            // Check to prevent cyclic dependency : parent's parent cannot be this category (Basic check)
+            if (parent.getParent() != null && parent.getParent().getId().equals(category.getId())) {
+                 throw new RuntimeException("Lặp danh mục (Cyclic dependency): Không thể đặt làm con của danh mục mà nó đang làm cha");
+            }
+            category.setParent(parent);
+        } else {
+             // If parentId is explicitly null in a request that supports clearing parent (you may want a separate flag for this, but for now assuming null means no change or root)
+             // Alternatively, you can add a param like `clearParent`. We will assume if it's passed as null, we don't change it, unless specified.
+             // If you want to be able to move a subcategory to root, we need to handle that.
+             // Let's assume if it is explicitly passed as 0 or something, we clear it. Let's use parentId == 0 to move to root.
+        }
+
+        if (parentId != null && parentId == 0) {
+            category.setParent(null);
         }
 
         if (isActive != null) {
@@ -113,6 +142,16 @@ public class CategoryService {
         if (productRepository.existsByCategoryId(id)) {
             throw new RuntimeException("Không thể xóa danh mục đang có sản phẩm. Vui lòng chuyển cấu hình sản phẩm trước khi xóa.");
         }
+        
+        if (!category.getChildren().isEmpty()) {
+             throw new RuntimeException("Không thể xóa danh mục đang có danh mục con. Vui lòng xóa hoặc di chuyển các danh mục con trước.");
+        }
         categoryRepository.deleteById(id);
+    }
+    
+    // API lấy danh sách tree cho frontend Category Menu
+    public List<Category> getCategoryTree() {
+        // Chỉ lấy những danh mục cấp 1 (parent == null), nó sẽ tự đệ quy lấy children nhờ cấu trúc Entity
+        return categoryRepository.findByParentIsNullAndIsActiveTrueOrderByDisplayOrderAsc();
     }
 }

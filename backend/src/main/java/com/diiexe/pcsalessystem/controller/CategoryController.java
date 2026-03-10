@@ -29,6 +29,12 @@ public class CategoryController {
             @RequestParam(defaultValue = "false") boolean all) {
         return ResponseEntity.ok(all ? categoryService.getAll() : categoryService.getAllActive());
     }
+    
+    // GET /api/categories/tree
+    @GetMapping("/tree")
+    public ResponseEntity<List<Category>> getCategoryTree() {
+         return ResponseEntity.ok(categoryService.getCategoryTree());
+    }
 
     // GET /api/categories/{id}
     @GetMapping("/{id}")
@@ -46,6 +52,7 @@ public class CategoryController {
             @RequestParam("name") String name,
             @RequestParam(value = "slug", required = false) String slug,
             @RequestParam(value = "isActive", defaultValue = "true") Boolean isActive,
+            @RequestParam(value = "parentId", required = false) Long parentId,
             @RequestParam("file") MultipartFile file) {
         try {
             if (file == null || file.isEmpty()) {
@@ -54,7 +61,7 @@ public class CategoryController {
             if (name == null || name.trim().isEmpty()) {
                  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Tên danh mục không được để trống"));
             }
-            return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(name, slug, isActive, file));
+            return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(name, slug, isActive, parentId, file));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
         }
@@ -66,12 +73,13 @@ public class CategoryController {
                                     @RequestParam("name") String name,
                                     @RequestParam(value = "slug", required = false) String slug,
                                     @RequestParam(value = "isActive", required = false) Boolean isActive,
+                                    @RequestParam(value = "parentId", required = false) Long parentId,
                                     @RequestParam(value = "file", required = false) MultipartFile file) {
         try {
             if (name == null || name.trim().isEmpty()) {
                  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Tên danh mục không được để trống"));
             }
-            return ResponseEntity.ok(categoryService.update(id, name, slug, isActive, file));
+            return ResponseEntity.ok(categoryService.update(id, name, slug, isActive, parentId, file));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
