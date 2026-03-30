@@ -1,5 +1,6 @@
 package com.diiexe.pcsalessystem.controller;
 
+import com.diiexe.pcsalessystem.dto.AuthOtpRequest;
 import com.diiexe.pcsalessystem.dto.LoginRequest;
 import com.diiexe.pcsalessystem.dto.LoginResponse;
 import com.diiexe.pcsalessystem.dto.RegisterRequest;
@@ -71,5 +72,10 @@ public class AuthController {
             errors.put(fieldName, errorMessage);
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<LoginResponse> verifyOtp(@RequestBody AuthOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request.getEmail(), request.getOtp()));
     }
 }

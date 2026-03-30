@@ -14,20 +14,26 @@ public class SlugUtils {
     public static String toSlug(String input) {
         if (input == null || input.isBlank()) return "";
 
-        // 1. Chuyển thành chữ thường và xử lý riêng chữ "đ"
-        String result = input.toLowerCase(Locale.ROOT).replace("đ", "d");
+        String result = input.toLowerCase(Locale.ROOT);
+        
+        // Thay thế các ký tự tiếng Việt đặc biệt trước khi Normalizer
+        result = result.replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a");
+        result = result.replaceAll("[èéẹẻẽêềếệểễ]", "e");
+        result = result.replaceAll("[ìíịỉĩ]", "i");
+        result = result.replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o");
+        result = result.replaceAll("[ùúụủũưừứựửữ]", "u");
+        result = result.replaceAll("[ỳýỵỷỹ]", "y");
+        result = result.replaceAll("đ", "d");
 
-        // 2. Normalizer: Tách các ký tự có dấu thành [ký tự gốc] + [dấu] (VD: "á" -> "a" + "´")
+        // Normalizer để xử lý các trường hợp còn sót lại
         result = Normalizer.normalize(result, Normalizer.Form.NFD);
-
-        // 3. Xóa toàn bộ các dấu vừa được tách ra
         result = DIACRITICS.matcher(result).replaceAll("");
 
-        // 4. Đổi khoảng trắng thành gạch ngang và xóa các ký tự không phải chữ, số, hoặc gạch ngang
+        // Đổi khoảng trắng thành gạch ngang và xóa các ký tự không phải chữ, số, hoặc gạch ngang
         result = result.replace(" ", "-");
         result = NOT_ALPHANUMERIC.matcher(result).replaceAll("");
 
-        // 5. Gộp nhiều dấu gạch ngang liên tiếp thành 1 và cắt bỏ gạch ngang ở 2 đầu
+        // Gộp nhiều dấu gạch ngang liên tiếp thành 1 và cắt bỏ gạch ngang ở 2 đầu
         result = MULTI_DASH.matcher(result).replaceAll("-");
         
         return result.replaceAll("^-|-$", "");

@@ -14,6 +14,7 @@ public class Payment extends BaseEntity {
     private String paymentMethod; // COD, BANK_TRANSFER
     private Double amount;
     private String transactionCode;
+    private String transactionId;
     
     private String status; // UNPAID, PAID, FAILED
     

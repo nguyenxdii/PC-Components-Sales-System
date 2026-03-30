@@ -1,13 +1,24 @@
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
+import { Link } from "react-router-dom";
 import {
   ShoppingCartOutlined,
   LeftOutlined,
   RightOutlined,
+  TagOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
-import { products, categories } from "../../data/dummyData";
-import { useState, useEffect } from "react";
+import { Typography, Tag } from "antd";
+import { productService } from "../../services/productService";
+import { categoryService } from "../../services/categoryService";
+import { bannerService } from "../../services/bannerService";
+import { sectionService } from "../../services/sectionService";
+import { useCart } from "../../contexts/CartContext";
+import CountdownTimer from "../../components/client/CountdownTimer";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+
+const { Text } = Typography;
 
 // Custom arrow components
 function NextArrow(props) {
@@ -36,21 +47,35 @@ function PrevArrow(props) {
 
 export default function HomePage() {
   const [banners, setBanners] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
-  // Load banners từ thư mục public/images/banners
+  const getFullImageUrl = (url) => {
+    if (!url) return "/images/cat-placeholder.png";
+    if (url.startsWith("http")) return url;
+    return url;
+  };
+
   useEffect(() => {
-    // danh sách banner
-    const bannerFiles = ["banner 1.png", "banner 2.jpg", "banner 3.png"];
-
-    const loadedBanners = bannerFiles.map((file, index) => ({
-      id: index + 1,
-      image: `/images/banners/${file}`,
-    }));
-
-    setBanners(loadedBanners);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [bannerData, sectionData] = await Promise.all([
+          bannerService.getActiveBanners(),
+          sectionService.getActiveSections()
+        ]);
+        setBanners(bannerData);
+        setSections(sectionData);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu trang chủ:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  // Settings cho slider với custom arrows
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -63,23 +88,19 @@ export default function HomePage() {
     prevArrow: <PrevArrow />,
   };
 
-  const flashSaleSettings = {
+  const sectionSliderSettings = {
     dots: false,
     infinite: true,
     speed: 500,
     slidesToShow: 5,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 2000,
+    autoplaySpeed: 4000,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
     responsive: [
-      {
-        breakpoint: 1024,
-        settings: { slidesToShow: 3 },
-      },
-      {
-        breakpoint: 640,
-        settings: { slidesToShow: 2 },
-      },
+      { breakpoint: 1024, settings: { slidesToShow: 3.2, arrows: false } },
+      { breakpoint: 640, settings: { slidesToShow: 2.1, arrows: false } },
     ],
   };
 
@@ -87,143 +108,138 @@ export default function HomePage() {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
-    }).format(price);
+    }).format(price || 0);
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-12 gap-4">
-          {/* Category Menu */}
-          <div className="col-span-3">
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="font-bold text-lg mb-4 text-gray-800">
-                DANH MỤC SẢN PHẨM
-              </h3>
-              <ul className="space-y-2">
-                {categories.map((cat) => (
-                  <li key={cat.id}>
-                    <a
-                      href="#"
-                      className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
-                    >
-                      <span className="text-xl">{cat.icon}</span>
-                      <span className="text-sm text-gray-700">{cat.name}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Banner Slider */}
-          <div className="col-span-9">
-            <div className="rounded-lg overflow-hidden shadow-lg relative">
-              {banners.length > 0 && (
-                <Slider {...sliderSettings}>
-                  {banners.map((banner) => (
-                    <div key={banner.id}>
-                      <div className="h-96 relative">
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Hero Banner Section */}
+      {(!loading && banners.length > 0) && (
+        <div className="container mx-auto px-4 py-4 md:py-6 animate-fadeIn">
+          <div className="rounded-2xl overflow-hidden shadow-2xl relative border border-gray-100 bg-white">
+              <Slider {...sliderSettings}>
+                {banners.map((banner) => (
+                  <div key={banner.id}>
+                    <Link to={banner.link || "#"}>
+                      <div className="aspect-[21/9] md:aspect-[21/7] relative bg-gray-50">
                         <img
-                          src={banner.image}
-                          alt={`Banner ${banner.id}`}
-                          className="w-full h-full object-cover"
+                          src={getFullImageUrl(banner.imageUrl)}
+                          alt={banner.name}
+                          className="w-full h-full object-cover transition-opacity duration-300"
+                          onLoad={(e) => e.target.style.opacity = 1}
+                          style={{ opacity: 0 }}
+                          onError={(e) => e.target.src = "/images/cat-placeholder.png"}
                         />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent pointer-events-none"></div>
                       </div>
+                    </Link>
+                  </div>
+                ))}
+              </Slider>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Sections Loop */}
+      <div className="container mx-auto px-4 pb-20 space-y-12 mt-6">
+        {sections.map((section) => (
+          <div key={section.id} className="animate-fadeIn">
+            <div className={`rounded-t-2xl px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                section.type === "FLASH_SALE" 
+                ? "bg-gradient-to-r from-red-600 to-rose-500 shadow-lg shadow-red-200" 
+                : "bg-white border-b border-gray-100 shadow-sm"
+            }`}>
+              <div className="flex items-center gap-4">
+                <h2 className={`${
+                    section.type === "FLASH_SALE" ? "text-white" : "text-gray-900"
+                } text-xl font-black italic uppercase tracking-tighter flex items-center gap-2 leading-none uppercase`}>
+                  {section.type === "FLASH_SALE" && <ThunderboltOutlined className="text-yellow-300 mr-1" />}
+                  {section.name}
+                </h2>
+                
+                {section.type === "FLASH_SALE" && section.endAt && (
+                   <CountdownTimer targetDate={section.endAt} />
+                )}
+              </div>
+              
+              <Link to={`/products?category=${section.slug}`} className={`${
+                  section.type === "FLASH_SALE" ? "text-white/90 hover:text-white" : "text-primary hover:opacity-80"
+              } text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 transition-all`}>
+                XEM TẤT CẢ <RightOutlined style={{ fontSize: '10px' }} />
+              </Link>
+            </div>
+
+            <div className={`p-6 rounded-b-2xl shadow-sm border border-t-0 ${
+                section.type === "FLASH_SALE" ? "bg-white border-red-100" : "bg-white border-gray-50"
+            }`}>
+              {section.products && section.products.length > 0 ? (
+                <Slider {...sectionSliderSettings}>
+                  {section.products.map((item) => (
+                    <div key={item.productId} className="px-2 h-full py-4">
+                       <Link to={`/product/${item.slug}`} className="product-card-old bg-white rounded-xl p-4 group flex flex-col h-[420px] relative overflow-hidden block">
+                          {item.discountPercent && (
+                             <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded shadow-sm uppercase tracking-tighter">
+                                Giảm {item.discountPercent}%
+                             </div>
+                          )}
+                          
+                          <div className="relative aspect-square overflow-hidden bg-white mb-4 rounded-lg flex items-center justify-center p-2">
+                             <img
+                                src={getFullImageUrl(item.mainImageUrl)}
+                                alt={item.name}
+                                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                                onError={(e) => e.target.src = "/images/cat-placeholder.png"}
+                             />
+                          </div>
+
+                          <div className="flex-1 flex flex-col">
+                             <div className="flex items-center gap-1.5 mb-1.5 opacity-50">
+                                <TagOutlined className="text-[10px]" />
+                                <Text className="text-[9px] font-extrabold uppercase tracking-widest">Premium Collection</Text>
+                             </div>
+
+                             <div className="mb-3 block flex-1">
+                                <h3 className="product-title text-xs font-bold text-gray-800 line-clamp-2 min-h-[32px] transition-colors duration-300 leading-tight uppercase">
+                                  {item.name}
+                                </h3>
+                             </div>
+
+                             <div className="mt-auto">
+                                <div className="flex flex-col mb-4">
+                                   <Text className="text-[#f57224] font-black text-base tracking-tight leading-none mb-1">
+                                      {formatPrice(item.salePrice || item.originalPrice)}
+                                   </Text>
+                                   {(item.salePrice && item.salePrice < item.originalPrice) && (
+                                      <Text delete className="text-[10px] text-gray-400 font-bold">
+                                         {formatPrice(item.originalPrice)}
+                                      </Text>
+                                   )}
+                                </div>
+
+                                <button 
+                                  onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      addToCart(item.productId, 1);
+                                  }}
+                                  className="btn-cart-slide"
+                                >
+                                   <ShoppingCartOutlined /> Thêm giỏ hàng
+                                </button>
+                             </div>
+                          </div>
+                       </Link>
                     </div>
                   ))}
                 </Slider>
+              ) : (
+                <div className="py-12 flex items-center justify-center">
+                    <Text type="secondary" italic>Chưa có sản phẩm trong khung này.</Text>
+                </div>
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Flash Sale Section */}
-      <div className="bg-white py-8 my-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-red-600">⚡ FLASH SALE</h2>
-            <div className="text-lg text-gray-600">Kết thúc sau: 02:45:30</div>
-          </div>
-
-          <Slider {...flashSaleSettings}>
-            {products.slice(0, 8).map((product) => (
-              <div key={product.id} className="px-2">
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-md mb-3"
-                  />
-                  <h3 className="text-sm text-gray-800 line-clamp-2 h-10 mb-2">
-                    {product.name}
-                  </h3>
-                  <div className="space-y-1">
-                    <div className="text-gray-400 line-through text-sm">
-                      {formatPrice(product.oldPrice)}
-                    </div>
-                    <div className="text-red-600 font-bold text-xl">
-                      {formatPrice(product.price)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </Slider>
-        </div>
-      </div>
-
-      {/* Product Grid */}
-      <div className="container mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          SẢN PHẨM NỔI BẬT
-        </h2>
-
-        <div className="grid grid-cols-5 gap-4">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-shadow p-4 group"
-            >
-              <div className="relative mb-4">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-md"
-                />
-                {/* Discount badge */}
-                <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold">
-                  -
-                  {Math.round(
-                    ((product.oldPrice - product.price) / product.oldPrice) *
-                      100,
-                  )}
-                  %
-                </div>
-              </div>
-
-              <h3 className="text-sm text-gray-800 line-clamp-2 h-10 mb-3">
-                {product.name}
-              </h3>
-
-              <div className="mb-3">
-                <div className="text-gray-400 line-through text-sm">
-                  {formatPrice(product.oldPrice)}
-                </div>
-                <div className="text-red-600 font-bold text-lg">
-                  {formatPrice(product.price)}
-                </div>
-              </div>
-
-              <button className="w-full bg-primary text-white py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center gap-2 group-hover:scale-105 transform transition-transform">
-                <ShoppingCartOutlined />
-                <span>Thêm vào giỏ</span>
-              </button>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );

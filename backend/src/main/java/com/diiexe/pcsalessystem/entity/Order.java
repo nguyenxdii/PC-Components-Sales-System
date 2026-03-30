@@ -15,6 +15,7 @@ public class Order extends BaseEntity {
 
     private Double totalPrice; // Tổng tiền hàng
     private Double finalPrice; // Sau khi giảm giá
+    private Double shippingFee; // Phí vận chuyển
 
     private String status; // PENDING, SHIPPING, COMPLETED, CANCELLED
 
@@ -23,6 +24,7 @@ public class Order extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "verificationCode", "verificationCodeExpiresAt", "active", "locked", "address"})
     private User user;
     
     // Relationship: Order có thể sử dụng 1 voucher

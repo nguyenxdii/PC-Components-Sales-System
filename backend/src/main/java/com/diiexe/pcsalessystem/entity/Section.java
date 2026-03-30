@@ -64,6 +64,17 @@ public class Section extends BaseEntity {
     /** Thời điểm kết thúc Flash Sale. Null nếu không phải Flash Sale. */
     private LocalDateTime endAt;
 
+    // ---- Cấu hình giảm giá cho Section ----
+
+    /** Bật/tắt giảm giá cho tất cả sản phẩm trong section này. */
+    private Boolean hasDiscount = false;
+
+    /** Loại giảm giá: AMOUNT (Số tiền cố định) | PERCENT (Phần trăm). */
+    private String discountType; // AMOUNT | PERCENT
+
+    /** Giá trị giảm tương ứng (ví dụ: 200000 hoặc 10). */
+    private Double discountValue;
+
     // ---- Relationship ----
 
     /**

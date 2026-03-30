@@ -13,6 +13,7 @@ import java.util.List;
 public class Cart extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     // Bidirectional: Giỏ hàng chứa nhiều món hàng

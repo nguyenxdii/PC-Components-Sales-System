@@ -11,6 +11,8 @@ import {
   SafetyOutlined,
   SettingOutlined,
   SkinOutlined,
+  PictureOutlined,
+  LayoutOutlined,
 } from "@ant-design/icons";
 
 export const sidebarConfig = {
@@ -93,6 +95,21 @@ export const sidebarConfig = {
           title: "Bảo hành",
           icon: SafetyOutlined,
           url: "/admin/warranties",
+        },
+      ],
+    },
+    {
+      title: "Giao diện & Marketing",
+      items: [
+        {
+          title: "Banner trang chủ",
+          icon: PictureOutlined,
+          url: "/admin/banners",
+        },
+        {
+          title: "Bố cục trang chủ",
+          icon: LayoutOutlined,
+          url: "/admin/sections",
         },
       ],
     },

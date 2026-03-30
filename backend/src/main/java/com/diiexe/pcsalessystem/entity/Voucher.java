@@ -14,7 +14,8 @@ public class Voucher extends BaseEntity {
     private String code; // SALE50
 
     private String type; // PERCENT, FIXED
-    private Double value; // 10% hoặc 50000 VNĐ
+    private Boolean isFreeShip = false; // Tùy chọn miễn phí ship
+    private Double value; // Giá trị (% hoặc số tiền)
 
     private Double maxDiscountValue; // Giảm tối đa
     private Double minOrderValue;    // Đơn tối thiểu

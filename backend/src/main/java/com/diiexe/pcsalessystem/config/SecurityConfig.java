@@ -18,14 +18,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configure(http)) // Enable CORS
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permit all OPTIONS
                 .requestMatchers("/api/auth/**", "/public/**").permitAll()
-
-                // GET công khai — khách hàng xem danh mục, thương hiệu
-                .requestMatchers("/api/categories", "/api/categories/**").permitAll()
-                .requestMatchers("/api/brands", "/api/brands/**").permitAll()
-
-                // POST/PUT/DELETE yêu cầu đăng nhập (admin)
+                
+                // Mở cửa cho tất cả API trong giai đoạn phát triển này
+                .requestMatchers("/api/**").permitAll()
+                
                 .anyRequest().authenticated()
             );
         return http.build();

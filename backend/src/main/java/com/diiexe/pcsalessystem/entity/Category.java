@@ -1,11 +1,13 @@
 package com.diiexe.pcsalessystem.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -36,9 +38,23 @@ public class Category extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    @JsonIgnore // Tránh lỗi infinite recursion khi return JSON
+    @JsonIgnoreProperties({"children", "parent"}) // Tránh lỗi infinite recursion khi return JSON, nhưng vẫn giữ thông tin cơ bản
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Category parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Category> children = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "category_brands",
+        joinColumns = @JoinColumn(name = "category_id"),
+        inverseJoinColumns = @JoinColumn(name = "brand_id")
+    )
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<Brand> brands = new HashSet<>();
 }

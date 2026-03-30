@@ -3,6 +3,8 @@ package com.diiexe.pcsalessystem.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.Set;
+
 @Data
 public class CategoryRequest {
     @NotBlank(message = "Tên danh mục không được để trống")
@@ -14,4 +16,6 @@ public class CategoryRequest {
     private Boolean isActive;
     
     private Long parentId;
+
+    private Set<Long> brandIds;
 }

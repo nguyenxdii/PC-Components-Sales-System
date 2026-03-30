@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -20,24 +22,42 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     public LoginResponse login(LoginRequest request) {
         // Tìm user theo email
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không đúng!"));
 
-        // Kiểm tra password với BCrypt
+        if (user.getActive() == null || !user.getActive()) {
+            throw new RuntimeException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email!");
+        }
+
+        // 1. Kiểm tra password với BCrypt
         // Hỗ trợ cả plain text (old users) và hashed password (new users)
         boolean passwordMatch;
         if (user.getPassword().startsWith("$2a$")) {
             // Password đã hash - dùng BCrypt verify
             passwordMatch = passwordEncoder.matches(request.getPassword(), user.getPassword());
         } else {
-            // Plain text password (old users) - so sánh trực tiếp
+            // Password cũ chưa hash - so sánh trực tiếp
             passwordMatch = request.getPassword().equals(user.getPassword());
+            
+            // Nếu khớp, tự động hash lại và lưu vào DB (optional but recommended)
+            if (passwordMatch) {
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                userRepository.save(user);
+            }
         }
 
         if (!passwordMatch) {
             throw new RuntimeException("Email hoặc mật khẩu không đúng!");
+        }
+
+        // 2. Chỉ khi mật khẩu ĐÚNG mới kiểm tra tài khoản có bị khóa hay không
+        if (Boolean.TRUE.equals(user.getLocked())) {
+            throw new RuntimeException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên!");
         }
 
         // Tạo token đơn giản (Trong production nên dùng JWT)
@@ -48,7 +68,10 @@ public class AuthService {
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole()
+                user.getRole(),
+                user.getPhoneNumber(),
+                user.getAddress(),
+                user.getAvatarUrl()
         );
 
         return new LoginResponse(token, userDTO);
@@ -78,21 +101,67 @@ public class AuthService {
         // Set default role
         user.setRole("USER");
         user.setLocked(false);
-        
+        user.setActive(false); // ⚠️ Chờ xác thực OTP
+
+        // Tạo mã OTP (6 số)
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        user.setVerificationCode(otp);
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(5));
+
         // Lưu vào database
         User savedUser = userRepository.save(user);
-        
-        // Generate token
-        String token = generateSimpleToken(savedUser);
-        
-        // Return user data + token
+
+        // Gửi Email OTP
+        emailService.sendOtpEmail(savedUser.getEmail(), otp);
+
+        // Trả về DTO (Token lúc này có thể là null hoặc chuỗi thông báo)
         UserDTO userDTO = new UserDTO(
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getFullName(),
-                savedUser.getRole()
+                savedUser.getRole(),
+                savedUser.getPhoneNumber(),
+                savedUser.getAddress(),
+                savedUser.getAvatarUrl()
         );
-        
+
+        return new LoginResponse("PENDING_VERIFICATION", userDTO);
+    }
+
+    public LoginResponse verifyOtp(String email, String otp) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+
+        if (Boolean.TRUE.equals(user.getActive())) {
+            throw new RuntimeException("Tài khoản đã được kích hoạt trước đó");
+        }
+
+        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(otp)) {
+            throw new RuntimeException("Mã xác thực không chính xác");
+        }
+
+        if (user.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Mã xác thực đã hết hạn");
+        }
+
+        // Kích hoạt tài khoản
+        user.setActive(true);
+        user.setVerificationCode(null);
+        user.setVerificationCodeExpiresAt(null);
+        User savedUser = userRepository.save(user);
+
+        // Đăng nhập tự động sau khi xác thực thành công
+        String token = generateSimpleToken(savedUser);
+        UserDTO userDTO = new UserDTO(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getFullName(),
+                savedUser.getRole(),
+                savedUser.getPhoneNumber(),
+                savedUser.getAddress(),
+                savedUser.getAvatarUrl()
+        );
+
         return new LoginResponse(token, userDTO);
     }
 

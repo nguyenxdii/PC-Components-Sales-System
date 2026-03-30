@@ -1,20 +1,39 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import {
-  ShoppingCartOutlined,
-  UserOutlined,
-  SearchOutlined,
-  LogoutOutlined,
-  SettingOutlined,
+import { 
+  ShoppingCartOutlined, 
+  UserOutlined, 
+  SearchOutlined, 
+  LogoutOutlined, 
   ShoppingOutlined,
+  AppstoreOutlined,
+  MenuOutlined,
+  RightOutlined,
+  ThunderboltOutlined
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import { Dropdown } from "antd";
+import { Dropdown, Badge, Divider } from "antd";
+import { useCart } from "../contexts/CartContext";
+import { categoryService } from "../services/categoryService";
 
 export default function MainLayout() {
+  const { cartCount } = useCart();
   const [user, setUser] = useState(null);
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
+  const API_URL = "http://localhost:8080";
+
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const tree = await categoryService.getCategoryTree();
+        setCategories(tree);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
@@ -23,8 +42,14 @@ export default function MainLayout() {
         console.error("Error parsing user data:", error);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Chỉ chạy 1 lần khi component mount
+  }, []);
+
+  const getFullImageUrl = (url) => {
+    if (!url) return "/images/cat-placeholder.png";
+    if (url.startsWith("http")) return url;
+    // Vì ảnh hiện đã ở thư mục public của FE, ta trả về url trực tiếp
+    return url;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -60,139 +85,125 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          {/* Top bar */}
-          <div className="flex items-center justify-between py-4">
-            {/* Logo */}
-            <Link to="/" className="flex items-center">
-              <img
-                src="/logo-exeshop.png"
-                alt="EXEShop Logo"
-                className="h-12 w-auto object-contain hover:opacity-80 transition-opacity"
-              />
-            </Link>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+         <div className="container mx-auto px-4">
+            <div className="flex items-center h-16 gap-2 md:gap-8">
+               {/* Logo */}
+               <Link to="/" className="flex-shrink-0">
+                  <img src="/logo-exeshop.png" alt="Logo" className="h-9 w-auto" />
+               </Link>
 
-            {/* Search bar */}
-            <div className="flex-1 max-w-2xl mx-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm sản phẩm..."
-                  className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500">
-                  <SearchOutlined style={{ fontSize: "20px" }} />
-                </button>
-              </div>
-            </div>
+               {/* Category Menu Trigger */}
+               <div className="nav-megamenu-trigger h-full flex items-center">
+                  <button className="flex items-center gap-2 px-3 h-10 bg-primary text-white font-bold text-[12px] uppercase hover:opacity-90 transition-all rounded-lg cursor-pointer tracking-wider border-none">
+                     <MenuOutlined className="text-base" />
+                     <span className="hidden lg:block">Danh mục</span>
+                  </button>
+                  
+                  <div className="megamenu-dropdown" style={{ top: '64px' }}>
+                     {categories.map((cat) => (
+                        <div key={cat.id} className="megamenu-item group/mitem">
+                           <div className="flex items-center gap-2">
+                              <AppstoreOutlined className="text-gray-400" />
+                              <span>{cat.name}</span>
+                           </div>
+                           <RightOutlined className="text-[10px] opacity-30" />
 
-            {/* Right section */}
-            <div className="flex items-center gap-6">
-              {/* Cart */}
-              <Link
-                to="/cart"
-                className="flex items-center gap-2 hover:text-orange-500"
-              >
-                <div className="relative">
-                  <ShoppingCartOutlined style={{ fontSize: "24px" }} />
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    0
-                  </span>
-                </div>
-                <span>Giỏ hàng</span>
-              </Link>
-
-              {/* User */}
-              {user ? (
-                <Dropdown
-                  menu={{ items: menuItems }}
-                  trigger={["click"]}
-                  placement="bottomRight"
-                >
-                  <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-                    <span className="text-gray-700">
-                      Xin chào, {user.fullName}
-                    </span>
-                    <img
-                      src={user.avatar || "/user-default.jpg"}
-                      alt={user.fullName}
-                      className="w-10 h-10 rounded-full object-cover shadow-md hover:shadow-lg transition-shadow border-2 border-gray-200"
-                    />
+                           <div className="megamenu-sub-panel">
+                              <div className="grid grid-cols-4 gap-4">
+                              {cat.children && cat.children.map((child) => (
+                                 <Link 
+                                    key={child.id} 
+                                    to={`/products?category=${child.id}`} 
+                                    className="cat-level-2-card group/card"
+                                 >
+                                    <img 
+                                       src={getFullImageUrl(child.iconUrl) || "/images/placeholder.png"} 
+                                       alt={child.name} 
+                                       className="cat-level-2-img group-hover/card:scale-110 transition-transform" 
+                                       onError={(e) => { e.target.src = "/images/placeholder.png"; }} 
+                                    />
+                                    <span className="cat-level-2-title">{child.name}</span>
+                                 </Link>
+                              ))}
+                              </div>
+                           </div>
+                        </div>
+                     ))}
                   </div>
-                </Dropdown>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Link
-                    to="/register"
-                    className="px-4 py-2 text-gray-700 hover:text-orange-500 font-medium transition-colors"
-                  >
-                    Đăng ký
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-md hover:from-red-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
-                  >
-                    <UserOutlined />
-                    <span>Đăng nhập</span>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
+               </div>
 
-          {/* Navigation menu */}
-          <nav className="border-t border-gray-200">
-            <ul className="flex items-center gap-4 py-3">
-              <li>
-                <Link
-                  to="/"
-                  className="text-gray-700 hover:text-orange-500 font-medium"
-                >
-                  Trang chủ
-                </Link>
-              </li>
-              <li className="text-gray-300 select-none">|</li>
-              <li>
-                <Link
-                  to="/products"
-                  className="text-gray-700 hover:text-orange-500 font-medium"
-                >
-                  Sản phẩm
-                </Link>
-              </li>
-              <li className="text-gray-300 select-none">|</li>
-              <li>
-                <Link
-                  to="/build-pc"
-                  className="text-gray-700 hover:text-orange-500 font-medium"
-                >
-                  Xây dựng PC
-                </Link>
-              </li>
-              <li className="text-gray-300 select-none">|</li>
-              <li>
-                <Link
-                  to="/deals"
-                  className="text-gray-700 hover:text-orange-500 font-medium"
-                >
-                  Khuyến mãi
-                </Link>
-              </li>
-              <li className="text-gray-300 select-none">|</li>
-              <li>
-                <Link
-                  to="/contact"
-                  className="text-gray-700 hover:text-orange-500 font-medium"
-                >
-                  Liên hệ
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
+               {/* Search - Hơi nhỏ lại để fit */}
+               <div className="flex-1 max-w-md hidden md:block">
+                  <div className="relative">
+                     <input
+                        type="text"
+                        placeholder="Tìm kiếm sản phẩm..."
+                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:border-primary focus:bg-white transition-all outline-none text-sm"
+                     />
+                     <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <SearchOutlined />
+                     </button>
+                  </div>
+               </div>
+
+               {/* Actions */}
+               <div className="flex items-center gap-4 ml-auto">
+                  <Link to="/cart" className="flex items-center gap-2 p-2 text-gray-700 hover:text-primary transition-all hover:bg-gray-50 rounded-lg group">
+                     <Badge count={cartCount} size="small" color="var(--primary-color)">
+                        <ShoppingCartOutlined className="text-xl" />
+                     </Badge>
+                     <span className="hidden sm:block font-bold text-[10px] uppercase group-hover:text-primary">Giỏ hàng</span>
+                  </Link>
+
+                  {user ? (
+                     <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+                        <div className="flex items-center gap-2 cursor-pointer group p-1 hover:bg-gray-50 rounded-lg transition-all">
+                           <img
+                               src={user.avatarUrl || "/user-default.jpg"}
+                               alt="Avatar"
+                               className="w-8 h-8 rounded-full border border-gray-100"
+                           />
+                           <span className="hidden sm:block text-[11px] font-bold text-gray-700 group-hover:text-primary">
+                             {user.fullName}
+                           </span>
+                        </div>
+                     </Dropdown>
+                  ) : (
+                     <Link to="/login" className="px-5 py-2.5 bg-primary text-white text-[11px] font-black rounded-lg hover:shadow-lg hover:shadow-orange-200 transition-all uppercase tracking-widest">
+                        Đăng nhập
+                     </Link>
+                  )}
+               </div>
+            </div>
+         </div>
+
+         {/* Sub Nav Row - Mỏng hơn */}
+         <div className="border-t border-gray-100 bg-gray-50/50 hidden md:block">
+            <div className="container mx-auto px-4">
+               <nav className="flex items-center justify-center h-9">
+                  <ul className="flex items-center gap-12 h-full m-0 p-0 list-none">
+                     <li>
+                        <Link to="/" className="text-[11px] font-bold text-gray-500 hover:text-primary uppercase tracking-widest transition-all">Trang chủ</Link>
+                     </li>
+                     <li>
+                        <Link to="/build-pc" className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 hover:text-primary uppercase tracking-widest transition-all">
+                           <ThunderboltOutlined className="text-[14px]" /> 
+                           <span>Xây dựng máy tính</span>
+                        </Link>
+                     </li>
+                     <li>
+                        <Link to="/contact" className="text-[11px] font-bold text-gray-500 hover:text-primary uppercase tracking-widest transition-all">Liên hệ</Link>
+                     </li>
+                     <li>
+                        <Link to="/deals" className="text-[11px] font-bold text-gray-500 hover:text-primary uppercase tracking-widest transition-all">Khuyến mãi</Link>
+                     </li>
+                  </ul>
+               </nav>
+            </div>
+         </div>
       </header>
+
 
       {/* Main content */}
       <main className="flex-1">

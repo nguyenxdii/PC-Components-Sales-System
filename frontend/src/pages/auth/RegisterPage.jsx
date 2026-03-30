@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Form, Input, Button, message, Modal } from "antd";
+import { Form, Input, Button, message, Modal, Spin } from "antd";
 import {
   UserOutlined,
   MailOutlined,
@@ -30,27 +30,11 @@ export default function RegisterPage() {
         address: values.address,
       });
 
-      // Show countdown modal
-      let count = 3;
-      const modal = Modal.success({
-        title: "🎉 Đăng ký thành công!",
-        content: `Chào mừng bạn đến với PC Sales! Đang chuyển đến trang đăng nhập sau ${count} giây...`,
-        okButtonProps: { style: { display: "none" } },
-      });
-
-      const interval = setInterval(() => {
-        count--;
-        setCountdown(count);
-        if (count > 0) {
-          modal.update({
-            content: `Chào mừng bạn đến với PC Sales! Đang chuyển đến trang đăng nhập sau ${count} giây...`,
-          });
-        } else {
-          clearInterval(interval);
-          modal.destroy();
-          navigate(`/login?email=${values.email}`);
-        }
-      }, 1000);
+      // Hiển thị thông báo và chuyển hướng đến trang OTP
+      message.success("Đăng ký thành công! Vui lòng kiểm tra email để nhận mã OTP.");
+      setTimeout(() => {
+        navigate(`/verify-otp?email=${values.email}`);
+      }, 1500);
     } catch (error) {
       const errorMsg =
         error.response?.data?.message ||
@@ -63,8 +47,22 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 m-4">
+    <div className="relative min-h-screen">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm transition-all duration-500">
+          <div className="bg-white p-8 rounded-[40px] shadow-2xl flex flex-col items-center gap-6 border border-orange-50">
+            <Spin size="large" className="scale-150 custom-orange-spin" />
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-1">Đang gửi mã xác thực...</h3>
+              <p className="text-gray-500 text-sm">Vui lòng không đóng trình duyệt trong giây lát.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50 p-4">
+        <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md p-10 m-4">
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
@@ -97,6 +95,7 @@ export default function RegisterPage() {
               prefix={<UserOutlined className="text-gray-400" />}
               placeholder="Họ và tên"
               size="large"
+              className="rounded-xl h-12"
             />
           </Form.Item>
 
@@ -111,6 +110,7 @@ export default function RegisterPage() {
               prefix={<MailOutlined className="text-gray-400" />}
               placeholder="Email"
               size="large"
+              className="rounded-xl h-12"
             />
           </Form.Item>
 
@@ -125,6 +125,7 @@ export default function RegisterPage() {
               prefix={<LockOutlined className="text-gray-400" />}
               placeholder="Mật khẩu"
               size="large"
+              className="rounded-xl h-12"
               iconRender={(visible) =>
                 visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
               }
@@ -152,6 +153,7 @@ export default function RegisterPage() {
               prefix={<LockOutlined className="text-gray-400" />}
               placeholder="Xác nhận mật khẩu"
               size="large"
+              className="rounded-xl h-12"
               iconRender={(visible) =>
                 visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
               }
@@ -179,8 +181,7 @@ export default function RegisterPage() {
               type="primary"
               htmlType="submit"
               size="large"
-              loading={loading}
-              className="w-full bg-gradient-to-r from-red-500 to-orange-500 border-none hover:from-red-600 hover:to-orange-600 font-semibold"
+              className="w-full h-12 bg-gradient-to-r from-red-500 to-orange-500 border-none hover:from-red-600 hover:to-orange-600 font-bold rounded-xl shadow-lg shadow-orange-100"
               style={{
                 background: "linear-gradient(to right, #ef4444, #f97316)",
               }}
@@ -221,6 +222,7 @@ export default function RegisterPage() {
               Đăng nhập
             </Link>
           </p>
+        </div>
         </div>
       </div>
     </div>

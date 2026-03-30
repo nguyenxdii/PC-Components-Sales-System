@@ -2,6 +2,8 @@ package com.diiexe.pcsalessystem.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -25,4 +27,10 @@ public class Brand extends BaseEntity {
      * Ẩn/hiện thương hiệu mà không cần xóa khỏi DB.
      */
     private Boolean isActive = true;
+
+    @ManyToMany(mappedBy = "brands")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Set<Category> categories = new HashSet<>();
 }

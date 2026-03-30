@@ -3,9 +3,6 @@ import axios from "axios";
 // Cấu hình base URL cho API Backend
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // Interceptor để tự động thêm token vào mọi request
@@ -26,8 +23,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token hết hạn hoặc không hợp lệ
+    // Nếu lỗi 401 xảy ra và KHÔNG phải là request đăng nhập/đăng ký
+    if (error.response?.status === 401 && !error.config.url.includes("/auth/")) {
+      // Token hết hạn hoặc không hợp lệ -> Chuyển về login
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
@@ -65,4 +63,6 @@ export const orderAPI = {
 export const userAPI = {
   getAll: () => api.get("/users"),
   getById: (id) => api.get(`/users/${id}`),
+  updateProfile: (id, data) => api.put(`/users/${id}/profile`, data),
+  updateAvatar: (id, formData) => api.post(`/users/${id}/avatar`, formData),
 };

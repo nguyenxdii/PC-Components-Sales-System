@@ -31,7 +31,16 @@ public class User extends BaseEntity {
     @Column(length = 1000)
     private String avatarUrl;
 
-    private boolean locked = false;
+    @Column(name = "is_locked")
+    private Boolean locked = false;
+    @Column(name = "is_active")
+    private Boolean active = false; // Tài khoản cần kích hoạt qua OTP
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "verification_code_expires_at")
+    private java.time.LocalDateTime verificationCodeExpiresAt;
     private String role; // "ADMIN", "USER", "STAFF"
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

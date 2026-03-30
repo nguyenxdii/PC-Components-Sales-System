@@ -1,38 +1,394 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Blob animation for login page background */
-@keyframes blob {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
+:root {
+  --primary-color: #f57224;
+  --secondary-color: #15171a;
+  --bg-main: #f4f6f8;
+  --header-height: 80px;
+  --nav-height: 50px;
+  --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
+/* Global Reset with Outfit Font */
+* {
+  font-family: var(--font-family) !important;
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+/* Product Card Old Style - Orange Hover */
+.product-card-old {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f0f0f0;
 }
 
-/* Custom styles */
+.product-card-old:hover {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 10px 25px -5px rgba(245, 114, 36, 0.2) !important;
+  transform: translateY(-5px);
+}
+
+.product-card-old:hover .product-title {
+  color: var(--primary-color) !important;
+}
+
+/* Add to Cart Button - Slide Effect */
+.btn-cart-slide {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  background: white;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-cart-slide::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.btn-cart-slide:hover::after {
+  left: 0;
+}
+
+.btn-cart-slide:hover {
+  color: white !important;
+}
+
 body {
   margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-main);
+  color: #1f2937;
 }
 
 code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: 'Fira Code', source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace !important;
+}
+
+/* Category Table Styling */
+.category-table .ant-table-thead > tr > th {
+  white-space: nowrap !important;
+  background-color: #f8fafc !important;
+}
+
+.category-row-parent {
+  font-weight: 500;
+}
+
+.category-row-child {
+  background-color: #fafafa !important;
+}
+
+.category-row-child td {
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+/* Hiệu ứng Backdrop Blur cho Modal/Drawer - Tăng vẻ hiện đại */
+.ant-modal-mask, .ant-drawer-mask {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.ant-modal-content {
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Biểu tượng mở rộng mới - Căn chỉnh mượt hơn */
+.expand-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 8px;
+}
+
+.expand-icon-wrapper:hover {
+  background-color: #f1f5f9;
+  color: #3b82f6;
+}
+
+.expand-icon-wrapper.expanded {
+  transform: rotate(90deg);
+  color: #3b82f6;
+}
+
+/* Tinh chỉnh hàng con - Nhẹ nhàng hơn */
+.category-row-child {
+  background-color: #fafafa !important;
+}
+
+.category-table .ant-table-row {
+  transition: background 0.2s ease;
+}
+
+/* Premium Megamenu Styles */
+.nav-megamenu-trigger {
+  position: relative;
+}
+
+.megamenu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 260px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  border-top: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+  border-radius: 0 0 8px 8px;
+}
+
+.nav-megamenu-trigger:hover .megamenu-dropdown {
+  opacity: 1;
+  visibility: visible;
+}
+
+.megamenu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  color: #374151; /* gray-700 */
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f9fa;
+  transition: all 0.2s ease;
+  position: static; /* Let parent handle positioning for sub-panel */
+}
+
+.megamenu-item:last-child {
+  border-bottom: none;
+}
+
+/* Biến item thành group tĩnh để panel con xổ ra không bị dính vào item */
+.megamenu-item:hover {
+  background: #fff5f5; /* Light red tint */
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.megamenu-sub-panel {
+  position: absolute;
+  top: 0;
+  left: 260px; /* Cạnh phải của Level 1 */
+  width: auto;
+  min-width: 600px;
+  max-width: 800px;
+  background: white;
+  box-shadow: 10px 10px 30px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  border-radius: 0 8px 8px 0;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  min-height: 100%;
+}
+
+.megamenu-item:hover .megamenu-sub-panel {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cat-column-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827; /* gray-900 */
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f3f4f6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cat-column-title:hover {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Category Level 2 Grid Card - Ảnh trên chữ dưới */
+.cat-level-2-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  width: 100%;
+}
+
+.cat-level-2-card:hover {
+  background: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.cat-level-2-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+}
+
+.cat-level-2-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.cat-level-2-card:hover .cat-level-2-title {
+  color: var(--primary-color);
+}
+
+/* Tinh chỉnh Megamenu Sub Panel */
+.megamenu-sub-panel {
+  min-width: 750px !important;
+  max-width: 900px !important;
+  padding: 30px !important;
+}
+/* Add to Cart Button - Premium Style (White to Orange Slide) */
+.btn-premium-premium {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  background: #ffffff;
+  color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 11px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(245, 114, 36, 0.08);
+}
+
+.btn-premium-premium::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+.btn-premium-premium:hover::after {
+  left: 0;
+}
+
+.btn-premium-premium:hover {
+  color: #ffffff !important;
+  box-shadow: 0 8px 25px rgba(245, 114, 36, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Typography Harmonization for Product List */
+.product-list-title {
+  font-size: 28px !important;
+  font-weight: 950 !important;
+  letter-spacing: -1px !important;
+  text-transform: uppercase !important;
+  color: #111827 !important;
+  line-height: 1.2 !important;
+}
+
+.product-list-count {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  color: #94a3b8 !important;
+}
+
+.breadcrumb-premium .ant-breadcrumb-link {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1.2px !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+}
+
+.breadcrumb-premium .ant-breadcrumb-separator {
+  font-size: 10px !important;
+  color: #cbd5e1 !important;
+}
+
+/* Sidebar Category Styling */
+.sidebar-cat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.sidebar-cat-item:hover {
+  background: #f8fafc;
+  color: var(--primary-color);
+  padding-left: 18px;
+}
+
+.sidebar-cat-item.active {
+  background: #fff5f0;
+  color: var(--primary-color);
+  border-color: #fee2d2;
 }
