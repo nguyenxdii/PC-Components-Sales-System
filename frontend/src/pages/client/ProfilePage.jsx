@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { 
   Card, Typography, Form, Input, Button, Upload, message, 
-  Divider, Row, Col, Avatar, Badge, Tag, Modal, Spin
+  Divider, Row, Col, Avatar, Badge, Tag, Modal, Spin, Tabs, List
 } from "antd";
 import { 
   SaveOutlined, UserOutlined, MailOutlined, PhoneOutlined, 
   HomeOutlined, CameraOutlined, LockOutlined, EditOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined, ThunderboltOutlined, CalendarOutlined,
+  DollarOutlined, ArrowRightOutlined
 } from "@ant-design/icons";
 import { userAPI } from "../../services/api";
 import axiosInstance from "../../services/api";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
     
     // Avatar states
     const [avatarFile, setAvatarFile] = useState(null);
@@ -43,8 +46,10 @@ const ProfilePage = () => {
             setUser(parsedUser);
             infoForm.setFieldsValue(parsedUser);
             setPreviewAvatar(parsedUser.avatarUrl);
+        } else {
+            navigate("/login");
         }
-    }, [infoForm]);
+    }, [infoForm, navigate]);
 
     // ---- THÔNG TIN CÁ NHÂN & AVATAR ----
     const onSaveInfo = async (values) => {
@@ -80,7 +85,6 @@ const ProfilePage = () => {
             setAvatarFile(info.file);
             setPreviewAvatar(URL.createObjectURL(info.file));
             
-            // Nếu người dùng chọn ảnh mà chưa bấm Sửa thông tin, tự động mở chế độ sửa để có nút Lưu
             if (!isEditingInfo) {
                 setIsEditingInfo(true);
             }
@@ -91,7 +95,6 @@ const ProfilePage = () => {
     const onRequestPasswordChange = async (values) => {
         setPasswordLoading(true);
         try {
-            // Yêu cầu lấy OTP
             await axiosInstance.post(`/users/${user.id}/request-password-otp`, {
                 currentPassword: values.currentPassword
             });
@@ -133,21 +136,19 @@ const ProfilePage = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen py-12">
-            <div className="container mx-auto px-4 max-w-5xl">
-                <Title level={2} className="!mb-8 font-black uppercase tracking-tight text-gray-800">Cài đặt tài khoản</Title>
+            <div className="container mx-auto px-4 max-w-7xl">
+                <Title level={2} className="!mb-12 font-black uppercase tracking-tight text-gray-800 text-center">Thông tin cá nhân</Title>
 
-                <Row gutter={24}>
-                    {/* Left: Avatar & Summary */}
+                <Row gutter={32}>
                     <Col xs={24} md={8}>
-                        <Card className="rounded-[32px] shadow-sm border-none text-center p-6 mb-6">
+                        <Card className="rounded-[40px] shadow-sm border-none text-center p-8 mb-6 sticky top-24">
                             <div className="relative inline-block group">
                                 <Avatar 
-                                    size={160} 
+                                    size={180} 
                                     src={previewAvatar} 
                                     icon={<UserOutlined />} 
-                                    className="border-4 border-orange-50 shadow-xl object-cover"
+                                    className="border-8 border-orange-50 shadow-2xl object-cover"
                                 />
-                                {/* Nút thay đổi avatar nằm chính giữa */}
                                 <Upload 
                                     showUploadList={false} 
                                     beforeUpload={() => false}
@@ -159,41 +160,39 @@ const ProfilePage = () => {
                                 </Upload>
                             </div>
                             
-                            {avatarFile && isEditingInfo && (
-                                <div className="mt-2 text-orange-500 font-medium text-sm">
-                                    Ảnh đã chọn. Vui lòng nhấn "Lưu Thông Tin" để cập nhật.
-                                </div>
-                            )}
-                            
-                            <div className="mt-6">
-                                <Title level={4} className="!mb-1 font-bold">{user.fullName}</Title>
-                                <Tag color="orange" className="rounded-full px-4 border-none font-bold uppercase text-[10px]">
+                            <div className="mt-8">
+                                <Title level={3} className="!mb-2 font-black">{user.fullName}</Title>
+                                <Tag color="orange" className="rounded-full px-6 py-1 border-none font-black uppercase text-[10px] tracking-widest">
                                     {user.role}
                                 </Tag>
                             </div>
 
-                            <Divider className="my-6 border-gray-100" />
+                            <Divider className="my-8 border-gray-100" />
                             
-                            <div className="text-left space-y-4">
-                                <div className="flex items-center gap-3 text-gray-500">
-                                    <MailOutlined className="text-orange-500" />
-                                    <Text className="text-sm truncate">{user.email}</Text>
+                            <div className="text-left space-y-6">
+                                <div className="flex flex-col gap-1">
+                                    <Text className="text-[9px] font-black uppercase text-gray-300 tracking-widest">Email liên hệ</Text>
+                                    <div className="flex items-center gap-3">
+                                        <MailOutlined className="text-orange-500" />
+                                        <Text className="text-sm font-bold text-gray-700 truncate">{user.email}</Text>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-gray-500">
-                                    <PhoneOutlined className="text-orange-500" />
-                                    <Text className="text-sm">{user.phoneNumber || "Chưa cập nhật"}</Text>
+                                <div className="flex flex-col gap-1">
+                                    <Text className="text-[9px] font-black uppercase text-gray-300 tracking-widest">Số điện thoại</Text>
+                                    <div className="flex items-center gap-3">
+                                        <PhoneOutlined className="text-orange-500" />
+                                        <Text className="text-sm font-bold text-gray-700">{user.phoneNumber || "Chưa cập nhật"}</Text>
+                                    </div>
                                 </div>
                             </div>
                         </Card>
                     </Col>
 
-                    {/* Right: Forms */}
                     <Col xs={24} md={16}>
-                        {/* Box Thông tin cá nhân */}
                         <Card className="rounded-[32px] shadow-sm border-none overflow-hidden mb-6">
                             <div className="flex justify-between items-center mb-6">
                                 <Title level={4} className="!m-0 font-black text-xs uppercase text-gray-400 tracking-widest">
-                                    <UserOutlined className="mr-2"/> Thông tin cá nhân
+                                    <UserOutlined className="mr-2"/> Cập nhật thông tin
                                 </Title>
                                 {!isEditingInfo ? (
                                     <Button type="primary" ghost icon={<EditOutlined />} onClick={() => setIsEditingInfo(true)} className="rounded-lg font-semibold border-primary text-primary">
@@ -249,11 +248,10 @@ const ProfilePage = () => {
                             </Form>
                         </Card>
 
-                        {/* Box Đổi mật khẩu */}
                         <Card className="rounded-[32px] shadow-sm border-none overflow-hidden">
                             <div className="flex justify-between items-center mb-6">
                                 <Title level={4} className="!m-0 font-black text-xs uppercase text-gray-400 tracking-widest">
-                                    <LockOutlined className="mr-2"/> Bảo mật tài khoản
+                                    <LockOutlined className="mr-2"/> Bảo mật & Mật khẩu
                                 </Title>
                                 {!isEditingPassword ? (
                                     <Button type="default" icon={<EditOutlined />} onClick={() => setIsEditingPassword(true)} className="rounded-lg font-semibold">
@@ -317,7 +315,7 @@ const ProfilePage = () => {
                     <MailOutlined className="text-5xl text-orange-500 mb-4" />
                     <Title level={4}>Kiểm tra Email của bạn</Title>
                     <Text className="block text-gray-500 mb-6">
-                        Chúng tôi đã gửi một mã xác minh gồm 6 chữ số đến email <b>{user.email}</b>. 
+                        Chúng tôi đã gửi một mã xác minh gồm 6 chữ số đến email <b>{user?.email}</b>. 
                         Bạn hãy nhập mã này để tạo mật khẩu mới.
                     </Text>
                     

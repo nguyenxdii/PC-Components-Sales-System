@@ -41,6 +41,12 @@ const ProductManagement = () => {
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchText.toLowerCase()) || 
+    p.sku.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     fetchData();
@@ -50,8 +56,11 @@ const ProductManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Admin cần xem nhiều sản phẩm hơn mặc định (21)
-      const response = await productService.getAllProducts({ size: 1000 });
+      // Admin cần xem TOÀN BỘ sản phẩm (kể cả đang ẩn)
+      const response = await productService.getAllProducts({ 
+        size: 2000,
+        activeOnly: false 
+      });
       setProducts(response.content || []);
     } catch (error) {
       message.error("Lỗi khi tải danh sách sản phẩm");
@@ -121,6 +130,7 @@ const ProductManagement = () => {
       title: "Giá bán",
       dataIndex: "price",
       key: "price",
+      sorter: (a, b) => a.price - b.price,
       render: (price) =>
         new Intl.NumberFormat("vi-VN", {
           style: "currency",
@@ -311,12 +321,23 @@ const ProductManagement = () => {
         </Button>
       </div>
 
+      <div className="mb-6 flex gap-4">
+        <Input
+          placeholder="Tìm theo tên sản phẩm hoặc SKU..."
+          prefix={<SearchOutlined className="text-gray-400" />}
+          allowClear
+          value={searchText}
+          onChange={e => setSearchText(e.target.value)}
+          className="h-10 rounded-lg w-80"
+        />
+      </div>
+
       <Table
         columns={columns}
-        dataSource={products}
+        dataSource={filteredProducts}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 12 }}
+        pagination={{ pageSize: 20 }}
       />
 
       <Modal

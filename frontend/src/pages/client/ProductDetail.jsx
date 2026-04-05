@@ -521,13 +521,28 @@ const ProductDetail = () => {
                 </Text>
               </div>
 
-              <div className="bg-red-50 p-6 rounded-2xl mb-8">
-                <div className="text-red-600 font-black text-4xl mb-1">
-                  {formatPrice(product.price)}
+              {/* Price Section */}
+              <div className="bg-red-50 p-6 rounded-2xl mb-8 relative overflow-hidden">
+                <div className="flex items-baseline gap-4 flex-wrap">
+                  <div className="text-red-600 font-black text-4xl mb-1">
+                    {formatPrice(product.salePrice || product.price)}
+                  </div>
+                  {product.salePrice && product.price > product.salePrice && (
+                    <Text delete className="text-gray-400 text-lg font-bold">
+                      {formatPrice(product.price)}
+                    </Text>
+                  )}
+                  {product.salePrice && product.price > product.salePrice && (
+                    <div className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-md self-center">
+                      -{Math.round(((product.price - product.salePrice) / product.price) * 100)}%
+                    </div>
+                  )}
                 </div>
-                <Text type="secondary" className="text-xs italic uppercase">
+                <Text type="secondary" className="text-[10px] uppercase font-bold tracking-widest opacity-60">
                   Giá đã bao gồm thuế VAT
                 </Text>
+                {/* Subtle background decoration */}
+                <ThunderboltOutlined className="absolute -right-4 -bottom-4 text-red-100 text-8xl opacity-30 rotate-12" />
               </div>
 
               <div className="mb-8">

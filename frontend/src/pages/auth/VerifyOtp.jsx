@@ -34,15 +34,12 @@ const VerifyOtp = () => {
                 otp: values.otp
             });
 
-            if (response.data.token) {
-                message.success("Kích hoạt tài khoản thành công!");
-                localStorage.setItem("token", response.data.token);
-                localStorage.setItem("user", JSON.stringify(response.data.user));
+            if (response.status === 200) {
+                message.success("Kích hoạt tài khoản thành công! Vui lòng đăng nhập để tiếp tục.");
                 
-                // Chuyển hướng về trang chủ sau 1.5s
+                // Chuyển hướng về trang đăng nhập sau 1.5s
                 setTimeout(() => {
-                    navigate("/");
-                    window.location.reload();
+                    navigate("/login");
                 }, 1500);
             }
         } catch (error) {

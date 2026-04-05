@@ -1,0 +1,28 @@
+{
+  "name": "pc-sales-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:all": "concurrently -n \"frontend,backend\" -c \"blue,green\" \"npm run frontend\" \"npm run backend\"",
+    "frontend": "npm run dev --prefix frontend",
+    "backend": "cd backend && mvnw spring-boot:run",
+    "seed": "npm run backend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nguyenxdii/PC-Components-Sales-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nguyenxdii/PC-Components-Sales-System/issues"
+  },
+  "homepage": "https://github.com/nguyenxdii/PC-Components-Sales-System#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

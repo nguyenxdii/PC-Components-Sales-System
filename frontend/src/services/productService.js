@@ -2,8 +2,14 @@ import axiosInstance from "./api";
 
 export const productService = {
   // Lấy danh sách sản phẩm
-  getAllProducts: async (params) => {
-    const response = await axiosInstance.get("/products", { params });
+  getAllProducts: async (params = {}) => {
+    // Đảm bảo các tham số mặc định được truyền đi
+    const actualParams = {
+      ...params,
+      size: params.size || 12,
+      activeOnly: params.activeOnly !== undefined ? params.activeOnly : true
+    };
+    const response = await axiosInstance.get("/products", { params: actualParams });
     return response.data;
   },
 

@@ -18,6 +18,7 @@ import {
   DeleteOutlined,
   UploadOutlined,
   ExclamationCircleOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { brandService } from "../../../services/brandService";
 
@@ -32,6 +33,12 @@ const BrandManagement = () => {
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  const filteredBrands = brands.filter(b => 
+    b.name.toLowerCase().includes(searchText.toLowerCase()) || 
+    b.slug.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     fetchData();
@@ -242,9 +249,20 @@ const BrandManagement = () => {
         </Button>
       </div>
 
+      <div className="mb-6 flex gap-4">
+        <Input
+          placeholder="Tìm theo tên thương hiệu hoặc slug..."
+          prefix={<SearchOutlined className="text-gray-400" />}
+          allowClear
+          value={searchText}
+          onChange={e => setSearchText(e.target.value)}
+          className="h-10 rounded-lg w-80"
+        />
+      </div>
+
       <Table
         columns={columns}
-        dataSource={brands}
+        dataSource={filteredBrands}
         rowKey="id"
         loading={loading}
       />

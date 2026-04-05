@@ -113,8 +113,11 @@ const SectionManagement = () => {
 
   const fetchInitialProducts = async () => {
     try {
-      // Admin cần xem nhiều sản phẩm hơn mặc định (21)
-      const response = await productService.getAllProducts({ size: 1000 });
+      // Khi chọn sản phẩm cho Section, Admin cần xem toàn bộ danh sách (kể cả đang ẩn)
+      const response = await productService.getAllProducts({ 
+        size: 2000,
+        activeOnly: false 
+      });
       setAllProducts(response.content || []);
     } catch (error) {}
   };
@@ -390,12 +393,45 @@ const SectionManagement = () => {
         </Form>
       </Modal>
 
-      <Modal title={<Text className="font-black uppercase italic tracking-tighter text-lg">📦 Sản phẩm trong: {currentSection?.name}</Text>} open={isProductModalVisible} onCancel={() => setIsProductModalVisible(false)} footer={null} width={800} destroyOnClose>
+      <Modal 
+        title={<Text className="font-black uppercase italic tracking-tighter text-lg">📦 Sản phẩm trong: {currentSection?.name}</Text>} 
+        open={isProductModalVisible} 
+        onCancel={() => setIsProductModalVisible(false)} 
+        footer={null} 
+        width={800} 
+        destroyOnClose
+      >
          <div className="mb-4">
              <Input prefix={<SearchOutlined />} placeholder="Tìm sản phẩm để thêm vào khung..." onChange={(e) => setSearchProduct(e.target.value)} className="h-11 rounded-xl" />
+             <div className="mt-2">
+                <Text type="secondary" className="text-[10px] font-bold uppercase tracking-widest">
+                   * Lưu ý: Sản phẩm đã được add vào một khung khác sẽ không hiển thị tại đây.
+                </Text>
+             </div>
          </div>
          <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="pr-2 custom-scrollbar">
-             <List itemLayout="horizontal" dataSource={allProducts.filter(p => p.name.toLowerCase().includes(searchProduct.toLowerCase()))} renderItem={(item) => {
+             <List 
+               itemLayout="horizontal" 
+               dataSource={(() => {
+                  // 1. Lấy tập hợp tất cả productId đã được gán vào BẤT KỲ section nào
+                  const usedProductIds = new Set(
+                    sections.flatMap(s => s.products?.map(p => p.productId) || [])
+                  );
+
+                  // 2. Lọc danh sách allProducts:
+                  // - Phải khớp với từ khóa tìm kiếm
+                  // - Phải CHƯA được dùng ở section nào KHÁC (trừ section hiện tại)
+                  return allProducts.filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(searchProduct.toLowerCase()) || 
+                                         (p.sku && p.sku.toLowerCase().includes(searchProduct.toLowerCase()));
+                    
+                    const isInCurrentSection = currentSection?.products?.some(sp => sp.productId === p.id);
+                    const isUsedElsewhere = usedProductIds.has(p.id) && !isInCurrentSection;
+
+                    return matchesSearch && !isUsedElsewhere;
+                  });
+               })()} 
+               renderItem={(item) => {
                  const isInSection = currentSection?.products?.some(p => p.productId === item.id);
                  return (
                      <List.Item actions={[
@@ -403,7 +439,16 @@ const SectionManagement = () => {
                          ( <Button danger type="link" onClick={() => handleRemoveProductFromSection(item.id)} className="font-bold text-xs uppercase">Gỡ bỏ</Button> ) : 
                          ( <Button type="link" onClick={() => handleAddProductToSection(item.id)} className="font-bold text-xs uppercase text-primary">Thêm vào</Button> )
                      ]}>
-                         <List.Item.Meta avatar={<Avatar shape="square" size={48} src={getFullImageUrl(item.mainImageUrl || item.imageUrl)} className="border border-gray-100" />} title={<Text className="text-xs font-bold text-gray-800 line-clamp-1">{item.name}</Text>} description={<Text className="text-[10px] font-black text-primary uppercase">{new Intl.NumberFormat('vi-VN').format(item.price)}đ</Text>} />
+                         <List.Item.Meta 
+                            avatar={<Avatar shape="square" size={48} src={getFullImageUrl(item.mainImageUrl || item.imageUrl)} className="border border-gray-100" />} 
+                            title={<Text className="text-xs font-bold text-gray-800 line-clamp-1">{item.name}</Text>} 
+                            description={
+                              <Space size="middle">
+                                <Text className="text-[10px] font-black text-primary uppercase">{new Intl.NumberFormat('vi-VN').format(item.price)}đ</Text>
+                                <Text type="secondary" className="text-[10px]">SKU: {item.sku}</Text>
+                              </Space>
+                            } 
+                         />
                      </List.Item>
                  );
              }} />

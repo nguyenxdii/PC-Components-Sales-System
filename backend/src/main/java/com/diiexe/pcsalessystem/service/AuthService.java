@@ -112,6 +112,7 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         // Gửi Email OTP
+        System.out.println(">>> REGISTERING USER: " + savedUser.getEmail() + " | OTP: " + otp);
         emailService.sendOtpEmail(savedUser.getEmail(), otp);
 
         // Trả về DTO (Token lúc này có thể là null hoặc chuỗi thông báo)

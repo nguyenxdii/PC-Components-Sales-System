@@ -41,6 +41,9 @@ public class OrderService {
     @Autowired
     private VoucherRepository voucherRepository;
 
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
+
     @Transactional
     public OrderResponse createOrder(OrderRequest request) throws Exception {
         User user = userRepository.findById(request.getUserId())
@@ -48,6 +51,9 @@ public class OrderService {
 
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Giỏ hàng trống"));
+
+        // Làm mới để đảm bảo lấy đúng dữ liệu CartItems mới nhất từ DB
+        entityManager.refresh(cart);
 
         if (cart.getCartItems().isEmpty()) {
             throw new RuntimeException("Giỏ hàng không có sản phẩm nào");
@@ -68,7 +74,12 @@ public class OrderService {
             detail.setOrder(order);
             detail.setProduct(item.getProduct());
             detail.setQuantity(item.getQuantity());
-            detail.setPriceAtPurchase(item.getProduct().getPrice());
+            
+            // ƯU TIÊN GIÁ SALE NẾU CÓ
+            Double price = item.getProduct().getSalePrice() != null ? 
+                        item.getProduct().getSalePrice() : item.getProduct().getPrice();
+            detail.setPriceAtPurchase(price);
+            
             details.add(detail);
             total += detail.getPriceAtPurchase() * detail.getQuantity();
         }

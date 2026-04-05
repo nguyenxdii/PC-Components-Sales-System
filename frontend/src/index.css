@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 :root {
   --primary-color: #f57224;
@@ -7,12 +7,44 @@
   --bg-main: #f4f6f8;
   --header-height: 80px;
   --nav-height: 50px;
-  --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Global Reset with Outfit Font */
+/* Global Reset with Be Vietnam Pro Font */
 * {
   font-family: var(--font-family) !important;
+}
+
+/* Base Utilities */
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 8px 16px rgba(245, 114, 36, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  box-shadow: 0 10px 25px rgba(245, 114, 36, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.hover-bg-primary:hover {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.hover-text-primary:hover {
+  color: var(--primary-color) !important;
 }
 
 /* Product Card Old Style - Orange Hover */
@@ -151,143 +183,172 @@ code {
   transition: background 0.2s ease;
 }
 
-/* Premium Megamenu Styles */
-.nav-megamenu-trigger {
-  position: relative;
-}
+/* ===== DROPDOWN DANH MỤC DỌC (Refined) ===== */
+.cat-menu-wrapper { position: relative; }
 
-.megamenu-dropdown {
+.cat-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
-  width: 260px;
-  background: #ffffff;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f0f0f0;
-  border-top: none;
+  z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease-in-out;
-  z-index: 1000;
-  border-radius: 0 0 8px 8px;
+  transform: translateY(6px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: 8px;
 }
 
-.nav-megamenu-trigger:hover .megamenu-dropdown {
+.cat-menu-wrapper:hover .cat-dropdown {
   opacity: 1;
   visibility: visible;
+  transform: translateY(0);
 }
 
-.megamenu-item {
+.cat-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eef2f6;
+  min-width: 240px;
+}
+
+.cat-list-item { position: relative; }
+
+.cat-list-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  color: #374151; /* gray-700 */
+  padding: 10px 18px;
   font-size: 13px;
-  cursor: pointer;
-  border-bottom: 1px solid #f8f9fa;
-  transition: all 0.2s ease;
-  position: static; /* Let parent handle positioning for sub-panel */
-}
-
-.megamenu-item:last-child {
-  border-bottom: none;
-}
-
-/* Biến item thành group tĩnh để panel con xổ ra không bị dính vào item */
-.megamenu-item:hover {
-  background: #fff5f5; /* Light red tint */
-  color: var(--primary-color);
   font-weight: 600;
+  color: #334155;
+  transition: all 0.15s;
+  text-decoration: none;
 }
 
-.megamenu-sub-panel {
+.cat-list-item:hover > .cat-list-link {
+  color: var(--primary-color);
+  background: #fff7ed;
+}
+
+/* Sub-panel bên phải */
+.cat-sub-panel {
   position: absolute;
-  top: 0;
-  left: 260px; /* Cạnh phải của Level 1 */
-  width: auto;
-  min-width: 600px;
-  max-width: 800px;
+  top: -8px;
+  left: calc(100% + 4px);
+  min-width: 480px;
   background: white;
-  box-shadow: 10px 10px 30px -5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f0f0f0;
-  border-radius: 0 8px 8px 0;
+  border-radius: 12px;
+  box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eef2f6;
   padding: 24px;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
-  min-height: 100%;
+  transform: translateX(8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.megamenu-item:hover .megamenu-sub-panel {
+.cat-list-item:hover > .cat-sub-panel {
   opacity: 1;
   visibility: visible;
+  transform: translateX(0);
 }
 
-.cat-column-title {
-  font-weight: 700;
-  font-size: 14px;
-  color: #111827; /* gray-900 */
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #f3f4f6;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.cat-column-title:hover {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
-/* Category Level 2 Grid Card - Ảnh trên chữ dưới */
-.cat-level-2-card {
+/* Sub-category card: HÌNH DỌC + TEXT DƯỚI */
+.cat-sub-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  gap: 10px;
   padding: 12px 8px;
   border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
   background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  width: 100%;
+  border: 1px solid transparent;
 }
 
-.cat-level-2-card:hover {
-  background: #fff;
+.cat-sub-card:hover {
+  background: white;
   border-color: var(--primary-color);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
+  box-shadow: 0 8px 20px -6px rgba(245, 114, 36, 0.15);
+  transform: translateY(-3px);
 }
 
-.cat-level-2-img {
-  width: 40px;
-  height: 40px;
+.cat-sub-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: white;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.cat-sub-img img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
 }
 
-.cat-level-2-title {
+.cat-sub-name {
   font-size: 11px;
   font-weight: 700;
-  color: #1e293b;
+  color: #334155;
+  text-align: center;
+  line-height: 1.3;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  line-height: 1.2;
+  letter-spacing: 0.2px;
 }
 
-.cat-level-2-card:hover .cat-level-2-title {
+.cat-sub-card:hover .cat-sub-name {
   color: var(--primary-color);
 }
 
-/* Tinh chỉnh Megamenu Sub Panel */
-.megamenu-sub-panel {
-  min-width: 750px !important;
-  max-width: 900px !important;
-  padding: 30px !important;
+/* ===== LIVE SEARCH DROPDOWN ===== */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 15px 50px -10px rgba(0, 0, 0, 0.18);
+  border: 1px solid #eef2f6;
+  max-height: 420px;
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 8px;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-radius: 10px;
+}
+
+.search-item:hover {
+  background: #f8fafc;
+}
+
+.search-item-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+  flex-shrink: 0;
+  border: 1px solid #f1f5f9;
+  padding: 4px;
 }
 /* Add to Cart Button - Premium Style (White to Orange Slide) */
 .btn-premium-premium {
@@ -391,4 +452,9 @@ code {
   background: #fff5f0;
   color: var(--primary-color);
   border-color: #fee2d2;
+}
+
+/* Custom Utilities for Premium Sections */
+.clip-path-slanted {
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
 }

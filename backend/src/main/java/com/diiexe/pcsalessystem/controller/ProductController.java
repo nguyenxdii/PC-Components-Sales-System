@@ -25,12 +25,18 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<java.util.Map<String, Object>> getAll(
             @RequestParam(required = false) Long category,
+            @RequestParam(required = false) String categorySlug,
             @RequestParam(required = false) Long brand,
+            @RequestParam(required = false) Long sectionId,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) String socketType,
+            @RequestParam(required = false) String ramType,
             @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(productService.getAll(category, brand, minPrice, maxPrice, sort, page));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "true") boolean activeOnly) {
+        return ResponseEntity.ok(productService.getAll(category, categorySlug, brand, sectionId, minPrice, maxPrice, socketType, ramType, sort, page, size, activeOnly));
     }
 
     @GetMapping("/{id}")

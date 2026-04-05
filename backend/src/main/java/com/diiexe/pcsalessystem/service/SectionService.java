@@ -68,8 +68,24 @@ public class SectionService {
     public SectionResponse update(Long id, SectionRequest request) {
         Section section = sectionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy section"));
+        
         updateSectionFields(section, request);
-        return mapToResponse(sectionRepository.save(section));
+        Section saved = sectionRepository.save(section);
+        
+        // Cập nhật lại giá cho toàn bộ sản phẩm trong section khi cấu hình giảm giá thay đổi
+        updateSectionProductsDiscount(saved);
+        
+        return mapToResponse(saved);
+    }
+
+    private void updateSectionProductsDiscount(Section section) {
+        if (section.getSectionProducts() != null) {
+            for (SectionProduct sp : section.getSectionProducts()) {
+                applySectionDiscountToProduct(section, sp, sp.getProduct());
+                sectionProductRepository.save(sp);
+                productRepository.save(sp.getProduct());
+            }
+        }
     }
 
     @Transactional
@@ -86,6 +102,15 @@ public class SectionService {
 
     @Transactional
     public void delete(Long id) {
+        Section section = sectionRepository.findById(id).orElse(null);
+        if (section != null) {
+            // Reset giá trước khi xóa section
+            for (SectionProduct sp : section.getSectionProducts()) {
+                Product p = sp.getProduct();
+                p.setSalePrice(null);
+                productRepository.save(p);
+            }
+        }
         sectionRepository.deleteById(id);
     }
 
@@ -115,6 +140,7 @@ public class SectionService {
                 
                 applySectionDiscountToProduct(section, sp, product);
                 sectionProductRepository.save(sp);
+                productRepository.save(product); // Cập nhật salePrice cho Product
             }
         }
         sectionProductRepository.flush();
@@ -136,6 +162,7 @@ public class SectionService {
 
             applySectionDiscountToProduct(section, sp, product);
             sectionProductRepository.save(sp);
+            productRepository.save(product); // Lưu giá sale vào Product
             
             // Đồng bộ thủ công vào list để mapToResponse lấy được ngay
             section.getSectionProducts().add(sp);
@@ -153,6 +180,11 @@ public class SectionService {
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy section"));
         
+        // Reset giá Product về null khi rời khỏi section
+        Product p = sp.getProduct();
+        p.setSalePrice(null);
+        productRepository.save(p);
+
         // Loại bỏ khỏi list trong bộ nhớ
         section.getSectionProducts().removeIf(item -> item.getProduct().getId().equals(productId));
         
@@ -163,18 +195,26 @@ public class SectionService {
     }
 
     private void applySectionDiscountToProduct(Section section, SectionProduct sp, Product product) {
+        // Reset trước khi áp dụng mới
+        sp.setDiscountPercent(0);
+        sp.setSalePrice(null);
+        product.setSalePrice(null);
+
         // Ưu tiên FLASH_SALE cũ (nếu có) hoặc Discount mới của Section
         if ("FLASH_SALE".equals(section.getType())) {
             sp.setDiscountPercent(10);
             sp.setSalePrice(product.getPrice() * 0.9);
+            product.setSalePrice(sp.getSalePrice());
         } else if (Boolean.TRUE.equals(section.getHasDiscount()) && section.getDiscountValue() != null) {
             if ("PERCENT".equals(section.getDiscountType())) {
                 sp.setDiscountPercent(section.getDiscountValue().intValue());
                 sp.setSalePrice(product.getPrice() * (1 - section.getDiscountValue() / 100));
+                product.setSalePrice(sp.getSalePrice());
             } else if ("AMOUNT".equals(section.getDiscountType())) {
                 double salePrice = product.getPrice() - section.getDiscountValue();
                 sp.setSalePrice(Math.max(0, salePrice));
                 sp.setDiscountPercent((int) ((product.getPrice() - salePrice) / product.getPrice() * 100));
+                product.setSalePrice(sp.getSalePrice());
             }
         }
     }

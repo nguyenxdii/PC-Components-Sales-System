@@ -4,6 +4,7 @@ D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\dii
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\AuthController.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\BannerController.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\BrandController.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\BuildPCController.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\CartController.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\CategoryController.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\controller\CommentController.java
@@ -18,6 +19,7 @@ D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\dii
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\AuthOtpRequest.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\BannerRequest.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\BrandRequest.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\BuildPCRequest.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\CartRequest.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\CartResponse.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\dto\CategoryRequest.java
@@ -41,6 +43,8 @@ D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\dii
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\Banner.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\BaseEntity.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\Brand.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\BuildPC.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\BuildPCItem.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\Cart.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\CartItem.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\entity\Category.java
@@ -60,6 +64,7 @@ D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\dii
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\PcSalesSystemApplication.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\repository\BannerRepository.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\repository\BrandRepository.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\repository\BuildPCRepository.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\repository\CartItemRepository.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\repository\CartRepository.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\repository\CategoryRepository.java
@@ -76,12 +81,14 @@ D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\dii
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\AuthService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\BannerService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\BrandService.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\BuildPCService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\CartService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\CategoryService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\CloudinaryService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\CommentService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\DashboardService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\EmailService.java
+D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\GeminiService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\MoMoService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\NotificationService.java
 D:\Java\PC Components Sales System\pc-sales-system\backend\src\main\java\com\diiexe\pcsalessystem\service\OrderService.java

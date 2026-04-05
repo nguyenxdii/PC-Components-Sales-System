@@ -32,7 +32,7 @@ const CountdownTimer = ({ targetDate }) => {
   };
 
   if (!timeLeft.hours && !timeLeft.minutes && !timeLeft.seconds) {
-    return <span className="text-white font-bold ml-2">KHUYẾN MÃI ĐÃ KẾT THÚC</span>;
+    return <span className="text-orange-500 font-bold ml-2">ĐÃ KẾT THÚC</span>;
   }
 
   return (
@@ -42,18 +42,18 @@ const CountdownTimer = ({ targetDate }) => {
           <span className="bg-black text-white px-2 py-1 rounded text-sm font-black min-w-[32px] text-center">
             {addLeadingZero(timeLeft.days)}
           </span>
-          <span className="text-white font-bold text-xs">NGÀY</span>
+          <span className="text-gray-600 font-bold text-[10px]">NGÀY</span>
         </>
       )}
-      <div className="flex items-center gap-1.5 ml-1">
+      <div className="flex items-center gap-1.5">
         <span className="bg-black text-white px-2 py-1 rounded text-sm font-black min-w-[32px] text-center">
           {addLeadingZero(timeLeft.hours)}
         </span>
-        <span className="text-white font-black">:</span>
+        <span className="text-black font-black">:</span>
         <span className="bg-black text-white px-2 py-1 rounded text-sm font-black min-w-[32px] text-center">
           {addLeadingZero(timeLeft.minutes)}
         </span>
-        <span className="text-white font-black">:</span>
+        <span className="text-black font-black">:</span>
         <span className="bg-black text-white px-2 py-1 rounded text-sm font-black min-w-[32px] text-center">
           {addLeadingZero(timeLeft.seconds)}
         </span>

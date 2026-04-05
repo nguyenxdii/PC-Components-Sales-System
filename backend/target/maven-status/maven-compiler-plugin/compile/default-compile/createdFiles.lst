@@ -7,6 +7,7 @@ com\diiexe\pcsalessystem\service\SaleExpiryTask.class
 com\diiexe\pcsalessystem\service\AuthService.class
 com\diiexe\pcsalessystem\controller\PublicVoucherController.class
 com\diiexe\pcsalessystem\service\CartService.class
+com\diiexe\pcsalessystem\service\GeminiService.class
 com\diiexe\pcsalessystem\dto\BrandRequest.class
 com\diiexe\pcsalessystem\dto\SectionRequest.class
 com\diiexe\pcsalessystem\service\NotificationService.class
@@ -21,6 +22,7 @@ com\diiexe\pcsalessystem\dto\UserDTO.class
 com\diiexe\pcsalessystem\controller\UserController.class
 com\diiexe\pcsalessystem\dto\LoginRequest.class
 com\diiexe\pcsalessystem\entity\Order.class
+com\diiexe\pcsalessystem\service\BuildPCService.class
 com\diiexe\pcsalessystem\config\CloudinaryConfig.class
 com\diiexe\pcsalessystem\dto\CartResponse$CartItemDTO.class
 com\diiexe\pcsalessystem\repository\VoucherRepository.class
@@ -35,10 +37,14 @@ com\diiexe\pcsalessystem\repository\SectionRepository.class
 com\diiexe\pcsalessystem\service\VoucherService.class
 com\diiexe\pcsalessystem\repository\BannerRepository.class
 com\diiexe\pcsalessystem\dto\MoMoPaymentRequest.class
+com\diiexe\pcsalessystem\repository\BuildPCRepository.class
 com\diiexe\pcsalessystem\config\DataInitializer.class
 com\diiexe\pcsalessystem\entity\OrderDetail.class
 com\diiexe\pcsalessystem\dto\ProductResponse$BrandDTO.class
 com\diiexe\pcsalessystem\repository\NotificationRepository.class
+com\diiexe\pcsalessystem\dto\BuildPCRequest.class
+com\diiexe\pcsalessystem\entity\BuildPCItem.class
+com\diiexe\pcsalessystem\controller\BuildPCController.class
 com\diiexe\pcsalessystem\controller\DashboardController.class
 com\diiexe\pcsalessystem\entity\CartItem.class
 com\diiexe\pcsalessystem\dto\ProductRequest.class
@@ -47,6 +53,7 @@ com\diiexe\pcsalessystem\service\BannerService.class
 com\diiexe\pcsalessystem\dto\MoMoQueryStatusResponse.class
 com\diiexe\pcsalessystem\entity\Product.class
 com\diiexe\pcsalessystem\dto\CartResponse.class
+com\diiexe\pcsalessystem\entity\BuildPCItem$BuildPCItemBuilder.class
 com\diiexe\pcsalessystem\entity\Banner.class
 com\diiexe\pcsalessystem\controller\CategoryController.class
 com\diiexe\pcsalessystem\repository\CartRepository.class
@@ -78,6 +85,7 @@ com\diiexe\pcsalessystem\dto\SectionResponse.class
 com\diiexe\pcsalessystem\controller\VoucherController.class
 com\diiexe\pcsalessystem\entity\Notification.class
 com\diiexe\pcsalessystem\dto\ProfileUpdateRequest.class
+com\diiexe\pcsalessystem\entity\BuildPC$BuildPCBuilder.class
 com\diiexe\pcsalessystem\entity\ProductImage.class
 com\diiexe\pcsalessystem\dto\OrderResponse.class
 com\diiexe\pcsalessystem\service\BrandService.class
@@ -91,6 +99,7 @@ com\diiexe\pcsalessystem\repository\CartItemRepository.class
 com\diiexe\pcsalessystem\service\CloudinaryService.class
 com\diiexe\pcsalessystem\service\SectionService.class
 com\diiexe\pcsalessystem\dto\CategoryRequest.class
+com\diiexe\pcsalessystem\entity\BuildPC.class
 com\diiexe\pcsalessystem\service\EmailService.class
 com\diiexe\pcsalessystem\service\DashboardService.class
 com\diiexe\pcsalessystem\entity\Comment.class

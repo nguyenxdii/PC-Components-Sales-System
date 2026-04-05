@@ -1,57 +1,50 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Typography, Breadcrumb, Skeleton, Empty, Tag, Button, Pagination } from "antd";
+import { Typography, Breadcrumb, Skeleton, Empty, Pagination, Collapse } from "antd";
 import { 
-  HomeOutlined, 
-  ShoppingCartOutlined,
-  TagOutlined,
-  ThunderboltOutlined,
   FilterOutlined,
-  RightOutlined
+  ArrowRightOutlined
 } from "@ant-design/icons";
 import { productService } from "../../services/productService";
 import { categoryService } from "../../services/categoryService";
+import { brandService } from "../../services/brandService";
+import { sectionService } from "../../services/sectionService";
 import { useCart } from "../../contexts/CartContext";
+import PremiumProductCard from "../../components/client/PremiumProductCard";
 
 const { Title, Text } = Typography;
 
 export default function ProductList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryId = searchParams.get("category");
+  const sectionId = searchParams.get("sectionId");
   const brandId = searchParams.get("brand");
+  const priceParam = searchParams.get("price");
   const sortParam = searchParams.get("sort") || "newest";
   const pageParam = parseInt(searchParams.get("page") || "0");
+  const keywordParam = searchParams.get("keyword");
 
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ totalPages: 0, totalElements: 0 });
-  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
  
-  const getFullImageUrl = (url) => {
-    if (!url) return "/images/cat-placeholder.png";
-    if (url.startsWith("http")) return url;
-    return url;
-  };
-
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price || 0);
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price || 0);
   };
 
   useEffect(() => {
-    const fetchInitData = async () => {
-        try {
-            const catTree = await categoryService.getCategoryTree();
-            setCategories(catTree);
-        } catch (error) {
-            console.error("Lỗi khi tải danh mục:", error);
-        }
+    const fetchBrands = async () => {
+      try {
+        const allBrands = await brandService.getActiveBrands();
+        setBrands(allBrands || []);
+      } catch (error) {
+        console.error("Lỗi khi tải brands:", error);
+      }
     };
-    fetchInitData();
+    fetchBrands();
   }, []);
 
   useEffect(() => {
@@ -60,40 +53,59 @@ export default function ProductList() {
       try {
         const params = { 
           category: categoryId,
+          sectionId: sectionId,
           brand: brandId,
+          priceRange: priceParam,
           sort: sortParam,
-          page: pageParam
+          page: pageParam,
+          keyword: keywordParam
         };
+        // Xóa params undefined
+        Object.keys(params).forEach(k => { if (!params[k]) delete params[k]; });
+        
         const response = await productService.getAllProducts(params);
         setProducts(response.content || []);
         setPagination({
-            totalPages: response.totalPages || 0,
-            totalElements: response.totalElements || 0
+          totalPages: response.totalPages || 0,
+          totalElements: response.totalElements || 0
         });
 
         if (categoryId) {
-          // Tìm category hiện tại từ cây hoặc fetch chi tiết (tạm thời tìm phẳng)
-          const allCats = await categoryService.getAllCategories();
-          const current = allCats.find(c => String(c.id) === categoryId);
-          setCurrentCategory(current);
+          try {
+            const allCats = await categoryService.getAllCategories();
+            const current = allCats.find(c => String(c.id) === categoryId);
+            setCurrentCategory(current);
+          } catch (err) {
+            setCurrentCategory(null);
+          }
+        } else if (sectionId) {
+          try {
+            const allSections = await sectionService.getAllSections();
+            const current = allSections.find(s => String(s.id) === sectionId);
+            if (current) {
+              setCurrentCategory({ name: current.name });
+            }
+          } catch (err) {
+            setCurrentCategory(null);
+          }
         } else {
           setCurrentCategory(null);
         }
       } catch (error) {
-        console.error("Lỗi khi tải danh sách sản phẩm:", error);
+        console.error("Lỗi khi tải sản phẩm:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
     window.scrollTo(0, 0);
-  }, [categoryId, brandId, sortParam, pageParam]);
+  }, [categoryId, sectionId, brandId, priceParam, sortParam, pageParam, keywordParam]);
 
-  const handleSortChange = (e) => {
+  const updateFilters = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
-    newParams.set("sort", e.target.value);
-    newParams.set("page", "0"); // Reset về trang đầu
+    if (value) newParams.set(key, value);
+    else newParams.delete(key);
+    newParams.set("page", "0");
     setSearchParams(newParams);
   };
 
@@ -103,165 +115,140 @@ export default function ProductList() {
     setSearchParams(newParams);
   };
 
-  const handleCategorySelect = (id) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (id) newParams.set("category", id);
-    else newParams.delete("category");
-    newParams.set("page", "0");
-    setSearchParams(newParams);
-  };
+  const priceRanges = [
+    { label: "Tất cả mức giá", value: "" },
+    { label: "Dưới 5 triệu", value: "0-5000000" },
+    { label: "5tr - 15tr", value: "5000000-15000000" },
+    { label: "15tr - 30tr", value: "15000000-30000000" },
+    { label: "Trên 30 triệu", value: "30000000-999000000" }
+  ];
+
+  const breadcrumbItems = [
+    { title: <Link to="/" className="text-gray-400 hover:text-primary transition-colors no-underline uppercase text-[10px] font-medium tracking-widest">Trang chủ</Link> },
+    { title: <Link to="/products" className="text-gray-400 hover:text-primary transition-colors no-underline uppercase text-[10px] font-medium tracking-widest">Sản phẩm</Link> },
+    ...(currentCategory ? [{ title: <span className="text-primary uppercase text-[10px] font-semibold tracking-widest">{currentCategory.name}</span> }] : [])
+  ];
+
+  const filterItems = [
+    {
+      key: 'brand',
+      label: <span className="text-[11px] font-bold uppercase tracking-widest text-slate-800">Thương hiệu</span>,
+      children: (
+        <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+          <div 
+            className={`px-3 py-2 rounded-lg text-xs cursor-pointer transition-all ${!brandId ? 'bg-primary text-white font-semibold' : 'bg-gray-50 text-slate-600 hover:bg-gray-100'}`}
+            onClick={() => updateFilters("brand", "")}
+          >
+            Tất cả
+          </div>
+          {brands.map(b => (
+            <div 
+              key={b.id}
+              className={`px-3 py-2 rounded-lg text-xs cursor-pointer transition-all ${brandId === String(b.id) ? 'bg-primary text-white font-semibold' : 'bg-gray-50 text-slate-600 hover:bg-gray-100'}`}
+              onClick={() => updateFilters("brand", String(b.id))}
+            >
+              {b.name}
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      key: 'price',
+      label: <span className="text-[11px] font-bold uppercase tracking-widest text-slate-800">Mức giá</span>,
+      children: (
+        <div className="flex flex-col gap-2">
+          {priceRanges.map(range => (
+            <div 
+              key={range.value}
+              className={`px-3 py-2 rounded-lg text-xs cursor-pointer transition-all ${priceParam === range.value || (!priceParam && range.value === "") ? 'bg-orange-50 text-primary font-semibold border border-orange-100' : 'bg-gray-50 text-slate-600 hover:bg-gray-100'}`}
+              onClick={() => updateFilters("price", range.value)}
+            >
+              {range.label}
+            </div>
+          ))}
+        </div>
+      )
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-20">
-      {/* Page Header / Breadcrumb - Harmonized */}
-      <div className="bg-white border-b border-gray-100 shadow-sm">
+    <div className="min-h-screen pb-20 bg-[#f8fafc]">
+      <div className="bg-white border-b border-gray-50">
         <div className="container mx-auto px-4 py-8">
-          <Breadcrumb 
-            className="mb-4 breadcrumb-premium"
-            items={[
-              { title: <Link to="/"><HomeOutlined className="mr-1" /> Trang chủ</Link> },
-              { title: "Sản phẩm" },
-              currentCategory ? { title: currentCategory.name } : null
-            ].filter(Boolean)}
-          />
+          <Breadcrumb className="mb-4" items={breadcrumbItems} />
           
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <Title level={1} className="product-list-title !mb-2">
-                {currentCategory ? currentCategory.name : "Tất cả sản phẩm"}
-              </Title>
-              <div className="product-list-count flex items-center gap-2">
-                <ThunderboltOutlined className="text-secondary" />
-                <span>Tìm thấy {pagination.totalElements} sản phẩm công nghệ chất lượng</span>
-              </div>
+              <h1 className="text-2xl font-black text-slate-900 uppercase italic m-0">
+                {keywordParam ? `Kết quả: "${keywordParam}"` : (currentCategory ? currentCategory.name : "Tất cả linh kiện")}
+              </h1>
+              <p className="text-[11px] font-medium text-gray-400 mt-1 uppercase tracking-widest">
+                Tìm thấy {pagination.totalElements} sản phẩm phù hợp
+              </p>
             </div>
             
-            <div className="flex items-center gap-3 bg-white p-1 rounded-xl">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2">Sắp xếp:</span>
-                <select 
-                    value={sortParam}
-                    onChange={handleSortChange}
-                    className="bg-gray-50 text-[11px] font-bold text-gray-700 outline-none cursor-pointer px-4 h-10 border border-gray-100 rounded-lg hover:bg-gray-100 transition-colors uppercase tracking-widest"
-                >
-                    <option value="newest">Mới nhất</option>
-                    <option value="price_asc">Giá: Thấp đến Cao</option>
-                    <option value="price_desc">Giá: Cao đến Thấp</option>
-                </select>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400">Sắp xếp:</span>
+              <select 
+                value={sortParam}
+                onChange={(e) => updateFilters("sort", e.target.value)}
+                className="bg-white text-xs text-slate-700 outline-none cursor-pointer px-4 py-2 border border-gray-200 rounded-lg focus:border-primary transition-all"
+              >
+                <option value="newest">Mới nhất</option>
+                <option value="price_asc">Giá tăng dần</option>
+                <option value="price_desc">Giá giảm dần</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content - Full Width */}
-      <div className="container mx-auto px-4 py-10">
-        <div className="flex flex-col gap-10">
-          {/* Product Grid Area */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row gap-10">
+          
+          {/* Sidebar */}
+          <aside className="w-full md:w-56 flex-shrink-0">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 sticky top-28">
+              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-50">
+                <FilterOutlined className="text-primary text-sm" />
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-800">Bộ lọc</span>
+              </div>
+              <Collapse ghost items={filterItems} defaultActiveKey={['brand', 'price']} expandIconPosition="end" />
+            </div>
+          </aside>
+
+          {/* Grid */}
           <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {[...Array(10)].map((_, i) => (
-                  <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 h-[420px]">
-                    <Skeleton.Image className="!w-full !h-48 mb-6 rounded-xl" active />
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100">
                     <Skeleton active paragraph={{ rows: 3 }} />
                   </div>
                 ))}
               </div>
             ) : products.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-fadeIn transition-all">
-                    {products.map((product) => (
-                    <div
-                        key={product.id}
-                        className="bg-white rounded-2xl p-5 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 transform hover:-translate-y-2 group border border-gray-100 flex flex-col h-[450px] relative overflow-hidden"
-                    >
-                        {/* Discount Badge */}
-                        {product.salePrice && product.salePrice < product.price && (
-                            <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-md uppercase tracking-tighter animate-pulse">
-                                Giảm {Math.round((1 - product.salePrice / product.price) * 100)}%
-                            </div>
-                        )}
-
-                        <div className="relative aspect-square overflow-hidden bg-white mb-6 rounded-xl flex items-center justify-center p-4">
-                            <Link to={`/product/${product.slug}`} className="w-full h-full">
-                                <img
-                                    src={getFullImageUrl(product.mainImageUrl)}
-                                    alt={product.name}
-                                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700"
-                                    onError={(e) => { e.target.src = "/images/cat-placeholder.png"; }}
-                                />
-                            </Link>
-                        </div>
-
-                        <div className="flex-1 flex flex-col">
-                            <div className="flex items-center gap-2 mb-2 opacity-50">
-                                <TagOutlined className="text-[10px] text-primary" />
-                                <Text className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">
-                                    {product.brand?.name || "Premium Series"}
-                                </Text>
-                            </div>
-                            
-                            <Link to={`/product/${product.slug}`} className="block mb-4 flex-1">
-                                <h3 className="font-bold text-gray-900 line-clamp-2 text-xs leading-relaxed group-hover:text-primary transition-colors duration-300 uppercase italic tracking-tight">
-                                    {product.name}
-                                </h3>
-                            </Link>
-
-                            <div className="mt-auto">
-                                <div className="flex flex-col mb-5">
-                                    {product.salePrice && product.salePrice < product.price ? (
-                                        <>
-                                            <span className="text-secondary font-black text-lg tracking-tighter leading-none mb-1">
-                                                {formatPrice(product.salePrice)}
-                                            </span>
-                                            <span className="text-gray-400 text-[11px] line-through font-bold opacity-60">
-                                                {formatPrice(product.price)}
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <span className="text-secondary font-black text-lg tracking-tighter">
-                                            {formatPrice(product.price)}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <button 
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        addToCart(product.id, 1);
-                                    }}
-                                    className="btn-premium-premium"
-                                >
-                                    <ShoppingCartOutlined className="text-sm" />
-                                    <span>Thêm vào giỏ hàng</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    ))}
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {products.map((product) => (
+                    <PremiumProductCard key={product.id} product={product} />
+                  ))}
                 </div>
 
-                {/* Pagination Support - Ant Design Style */}
-                <div className="mt-16 flex justify-center">
-                    <Pagination 
-                        current={pageParam + 1}
-                        total={pagination.totalElements}
-                        pageSize={21}
-                        onChange={handlePageChange}
-                        showSizeChanger={false}
-                        className="premium-pagination"
-                    />
+                <div className="mt-12 flex justify-center">
+                  <Pagination 
+                    current={pageParam + 1}
+                    total={pagination.totalElements}
+                    pageSize={21}
+                    onChange={handlePageChange}
+                    showSizeChanger={false}
+                  />
                 </div>
               </>
             ) : (
-              <div className="bg-white py-24 rounded-3xl border border-dashed border-gray-200">
-                <Empty 
-                    description={
-                        <div className="flex flex-col items-center">
-                            <Text strong className="text-gray-400 mb-2">Không tìm thấy sản phẩm nào</Text>
-                            <Text type="secondary" className="text-xs">Vui lòng chọn danh mục khác hoặc hãng sản xuất khác.</Text>
-                        </div>
-                    }
-                />
+              <div className="bg-white py-24 rounded-2xl border border-dashed border-gray-200 flex justify-center text-center px-6">
+                <Empty description={<span className="text-gray-400 text-sm">Không tìm thấy sản phẩm nào phù hợp</span>} />
               </div>
             )}
           </div>

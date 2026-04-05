@@ -46,6 +46,12 @@ const CategoryManagement = () => {
   const [fileList, setFileList] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  const filteredCategories = categories.filter(c => 
+    c.name.toLowerCase().includes(searchText.toLowerCase()) || 
+    c.slug.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     fetchData();
@@ -341,6 +347,9 @@ const CategoryManagement = () => {
         <Input
           placeholder="Tìm kiếm danh mục..."
           prefix={<SearchOutlined className="text-gray-400" />}
+          allowClear
+          value={searchText}
+          onChange={e => setSearchText(e.target.value)}
           className="h-10 rounded-lg w-80"
         />
       </div>
@@ -348,7 +357,7 @@ const CategoryManagement = () => {
       <Table
         className="category-table"
           columns={columns}
-          dataSource={categories}
+          dataSource={filteredCategories}
           rowKey="id"
           loading={loading}
           pagination={false}

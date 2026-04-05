@@ -12,15 +12,39 @@ export const CartProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
+    // Tự động kiểm tra Auth state để dọn dẹp giỏ hàng
+    const checkAuthAndFetchCart = () => {
+      const userData = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+      
+      if (!userData || !token) {
+        if (user) {
+          setUser(null);
+          setCart({ items: [], totalAmount: 0 });
+        }
+        return;
+      }
+
       const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      fetchCart(parsedUser.id);
-    }
-  }, []);
+      // Nếu là user mới hoặc chưa có user trong state
+      if (!user || user.id !== parsedUser.id) {
+        setUser(parsedUser);
+        fetchCart(parsedUser.id);
+      }
+    };
+
+    checkAuthAndFetchCart();
+    
+    // Polling nhẹ để bắt kịp thay đổi localStorage (Login/Logout)
+    const intervalId = setInterval(checkAuthAndFetchCart, 1000);
+    return () => clearInterval(intervalId);
+  }, [user]);
 
   const fetchCart = async (userId) => {
+    if (!userId) {
+       setCart({ items: [], totalAmount: 0 });
+       return;
+    }
     try {
       setLoading(true);
       const response = await cartService.getCart(userId);
@@ -33,19 +57,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (productId, quantity = 1) => {
-    let currentUser = user;
-    if (!currentUser) {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        currentUser = JSON.parse(userData);
-        setUser(currentUser);
-      }
-    }
-
-    if (!currentUser) {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
       message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
       return;
     }
+    const currentUser = JSON.parse(userData);
 
     try {
       setLoading(true);
@@ -61,8 +78,9 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (itemId, quantity) => {
-    let currentUser = user || JSON.parse(localStorage.getItem("user"));
-    if (!currentUser) return;
+    const userData = localStorage.getItem("user");
+    if (!userData) return;
+    const currentUser = JSON.parse(userData);
     
     try {
       const response = await cartService.updateQuantity(itemId, currentUser.id, quantity);
@@ -73,8 +91,9 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (itemId) => {
-    let currentUser = user || JSON.parse(localStorage.getItem("user"));
-    if (!currentUser) return;
+    const userData = localStorage.getItem("user");
+    if (!userData) return;
+    const currentUser = JSON.parse(userData);
     
     try {
       const response = await cartService.removeItem(itemId, currentUser.id);
@@ -96,7 +115,10 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         removeFromCart,
         cartCount,
-        refreshCart: () => user && fetchCart(user.id),
+        refreshCart: () => {
+          const userData = localStorage.getItem("user");
+          if (userData) fetchCart(JSON.parse(userData).id);
+        }
       }}
     >
       {children}

@@ -39,7 +39,7 @@ public class ProductService {
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    public java.util.Map<String, Object> getAll(Long categoryId, Long brandId, Double minPrice, Double maxPrice, String sort, int page) {
+    public java.util.Map<String, Object> getAll(Long categoryId, String categorySlug, Long brandId, Long sectionId, Double minPrice, Double maxPrice, String socketType, String ramType, String sort, int page, int size, boolean activeOnly) {
         Specification<Product> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -47,8 +47,18 @@ public class ProductService {
                 predicates.add(cb.equal(root.get("category").get("id"), categoryId));
             }
 
+            if (categorySlug != null && !categorySlug.isBlank()) {
+                predicates.add(cb.equal(root.get("category").get("slug"), categorySlug));
+            }
+
             if (brandId != null) {
                 predicates.add(cb.equal(root.get("brand").get("id"), brandId));
+            }
+
+            if (sectionId != null) {
+                // Join với SectionProduct để lọc theo sectionId (đã map trong Product entity)
+                jakarta.persistence.criteria.Join<Product, com.diiexe.pcsalessystem.entity.SectionProduct> sectionJoin = root.join("sectionProducts");
+                predicates.add(cb.equal(sectionJoin.get("section").get("id"), sectionId));
             }
 
             if (minPrice != null) {
@@ -59,8 +69,18 @@ public class ProductService {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
             }
 
-            // Chỉ lấy sản phẩm đang hoạt động
-            predicates.add(cb.equal(root.get("isActive"), true));
+            if (socketType != null && !socketType.isBlank()) {
+                predicates.add(cb.equal(root.get("socketType"), socketType));
+            }
+
+            if (ramType != null && !ramType.isBlank()) {
+                predicates.add(cb.equal(root.get("ramType"), ramType));
+            }
+
+            // Lọc sản phẩm đang hoạt động (truy cập công khai) hoặc cả sản phẩm ẩn (cho Admin)
+            if (activeOnly) {
+                predicates.add(cb.equal(root.get("isActive"), true));
+            }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -82,8 +102,8 @@ public class ProductService {
             }
         }
 
-        // Áp dụng phân trang: 21 sản phẩm 1 trang
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 21, sortOrder);
+        // Áp dụng phân trang: Sử dụng tham số size linh hoạt
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortOrder);
         org.springframework.data.domain.Page<Product> productPage = productRepository.findAll(spec, pageable);
         
         List<ProductResponse> content = productPage.getContent().stream()
@@ -265,7 +285,7 @@ public class ProductService {
         product.setWarrantyPeriod(request.getWarrantyPeriod());
     }
 
-    private ProductResponse mapToResponse(Product product) {
+    public ProductResponse mapToResponse(Product product) {
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
         response.setName(product.getName());

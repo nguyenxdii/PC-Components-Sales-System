@@ -22,4 +22,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findBySku(String sku);
 
     java.util.List<Product> findByCategoryId(Long categoryId);
+
+    java.util.List<Product> findByCategorySlugAndIsActiveTrue(String slug);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Product p WHERE p.category.slug = :slug AND (p.socketType = :socket OR p.socketType IS NULL) AND p.isActive = true")
+    java.util.List<Product> findByCompatibleSocket(String slug, String socket);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Product p WHERE p.category.slug = :slug AND (p.ramType = :ram OR p.ramType IS NULL) AND p.isActive = true")
+    java.util.List<Product> findByCompatibleRam(String slug, String ram);
 }
